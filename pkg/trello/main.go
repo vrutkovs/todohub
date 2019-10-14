@@ -29,6 +29,15 @@ func GetClient(settings TrelloSettings) *Client {
 	return c
 }
 
+func (c *Client) SetBoardID(id string) {
+	log.Printf("trello: using board %s", id)
+	board, err := c.api.GetBoard(id, api.Defaults())
+	if err != nil {
+		panic(err)
+	}
+	c.board = board
+}
+
 func (c *Client) EnsureListExists(name string) (string, error) {
 	log.Printf("Creating list %s", name)
 	lists, err := c.board.GetLists(api.Defaults())

@@ -34,6 +34,10 @@ func GetClient(settings GithubSettings) *Client {
 }
 
 func (c *Client) UpdateTrello(tr *trello.Client) {
+	if c.settings.BoardID != "" {
+		tr.SetBoardID(c.settings.BoardID)
+	}
+
 	log.Println("github: updating trello")
 	for list, searchQuery := range c.settings.GithubSearchList {
 		query := searchQuery
