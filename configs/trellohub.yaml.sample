@@ -14,7 +14,7 @@ github:
   #boardid: 1337Speak
 
   # Optional: prefix for all searches
-  #search_prefix: 'is:open is:pr archived:false updated:>=2019-06-01'
+  search_prefix: 'is:open is:pr archived:false updated:>=2019-06-01'
   # Sample board lists
   lists:
     'To review': 'review-requested:username'

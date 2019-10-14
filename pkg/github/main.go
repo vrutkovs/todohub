@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"fmt"
 	retry "github.com/avast/retry-go"
 	api "github.com/google/go-github/v28/github"
 	"github.com/vrutkovs/trellohub/pkg/trello"
@@ -35,7 +36,17 @@ func GetClient(settings GithubSettings) *Client {
 func (c *Client) UpdateTrello(tr *trello.Client) {
 	log.Println("github: updating trello")
 	for list, searchQuery := range c.settings.GithubSearchList {
-		searchResults, err := c.getIssueInfoForSearchQuery(searchQuery)
+		query := searchQuery
+		if len(c.settings.SearchPrefix) > 0 {
+			query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, searchQuery)
+		}
+		searchResults, err := c.getIssueInfoForSearchQuery(query)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("github: fetched search results for list '%s'", list)
+
+		listID, err := tr.EnsureListExists(list)
 		if err != nil {
 			panic(err)
 		}
