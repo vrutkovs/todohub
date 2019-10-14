@@ -33,21 +33,25 @@ func GetClient(settings GithubSettings) *Client {
 }
 
 func (c *Client) UpdateTrello(tr *trello.Client) {
+	log.Println("github: updating trello")
 	for list, searchQuery := range c.settings.GithubSearchList {
 		searchResults, err := c.getIssueInfoForSearchQuery(searchQuery)
 		if err != nil {
 			panic(err)
 		}
-		tr.EnsureListExists(list)
+		log.Printf("github: got list ID %s", listID)
+
 		for _, item := range searchResults {
-			card, err := tr.AddItemToList(item.title, list)
+			card, err := tr.AddItemToList(item.title, listID)
 			if err != nil {
 				panic(err)
 			}
+			log.Printf("github: created item %s", item.title)
 			err = tr.AttachLink(card, item.url)
 			if err != nil {
 				panic(err)
 			}
+			log.Printf("github: attached url %s", item.url)
 		}
 	}
 
