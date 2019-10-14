@@ -83,6 +83,11 @@ func (c *Client) AttachLink(card *Card, url string) error {
 	if err != nil {
 		return err
 	}
+	for _, attach := range apiCard.Attachments {
+		if attach.URL == url {
+			return nil
+		}
+	}
 	attach := &api.Attachment{URL: url}
 	apiCard.AddURLAttachment(attach)
 	return nil
