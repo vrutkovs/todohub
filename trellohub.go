@@ -16,6 +16,10 @@ func main() {
 	tr := trello.GetClient(s.Trello)
 	gh := github.GetClient(s.Github)
 
+	// Update now
+	gh.UpdateTrello(tr)
+
+	// Update on cron
 	go func() {
 		gocron.Every(s.SyncTimeout).Minutes().Do(gh.UpdateTrello, tr)
 		<-gocron.Start()
