@@ -2,14 +2,21 @@ package github
 
 import (
 	"context"
+	retry "github.com/avast/retry-go"
 	api "github.com/google/go-github/v28/github"
 	"github.com/vrutkovs/trellohub/pkg/trello"
 	"golang.org/x/oauth2"
+	"log"
 )
 
 type Client struct {
 	api      *api.Client
 	settings GithubSettings
+}
+
+type IssueInfo struct {
+	title string
+	url   string
 }
 
 func GetClient(settings GithubSettings) *Client {
@@ -26,6 +33,59 @@ func GetClient(settings GithubSettings) *Client {
 }
 
 func (c *Client) UpdateTrello(tr *trello.Client) {
+	for list, searchQuery := range c.settings.GithubSearchList {
+		searchResults, err := c.getIssueInfoForSearchQuery(searchQuery)
+		if err != nil {
+			panic(err)
+		}
+		tr.EnsureListExists(list)
+		for _, item := range searchResults {
+			card, err := tr.AddItemToList(item.title, list)
+			if err != nil {
+				panic(err)
+			}
+			err = tr.AttachLink(card, item.url)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
 	opt := &api.RepositoryListByOrgOptions{Type: "public"}
 	c.api.Repositories.ListByOrg(context.Background(), "github", opt)
+}
+
+func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]IssueInfo, error) {
+	ctx := context.Background()
+	opts := &api.SearchOptions{Sort: "created", Order: "asc"}
+	results := make([]IssueInfo, 0)
+	err := retry.Do(
+		func() error {
+			result, _, err := c.api.Search.Issues(ctx, searchQuery, opts)
+			if err != nil {
+				return err
+			}
+			for _, issue := range result.Issues {
+				ii := IssueInfo{
+					title: issue.GetTitle(),
+					url:   issue.GetHTMLURL(),
+				}
+				results = append(results, ii)
+			}
+			return nil
+		},
+		retry.RetryIf(func(err error) bool {
+			return !isCritical(err)
+		}),
+	)
+	return results, err
+}
+
+// Check if github error is fatal
+func isCritical(err error) bool {
+	if _, ok := err.(*api.RateLimitError); ok {
+		log.Println("hit rate limit")
+		return false
+	}
+	return true
 }
