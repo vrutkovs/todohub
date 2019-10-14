@@ -1,10 +1,24 @@
 package main
 
 import (
-	"github.com/vrutkovs/trellohub/pkg/gin"
+	"github.com/jasonlvhit/gocron"
+	"github.com/vrutkovs/trellohub/pkg/github"
+	"github.com/vrutkovs/trellohub/pkg/settings"
+	"github.com/vrutkovs/trellohub/pkg/trello"
 )
 
 func main() {
-	r := gin.SetupGin()
-	gin.StartGin(r)
+	s, err := settings.LoadSettings("configs/trellohub.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	tr := trello.GetClient(s.Trello)
+	gh := github.GetClient(s.Github)
+
+	go func() {
+		gocron.Every(s.SyncTimeout).Minutes().Do(gh.UpdateTrello, tr)
+		<-gocron.Start()
+	}()
+
 }

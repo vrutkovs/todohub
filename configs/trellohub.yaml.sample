@@ -1,7 +1,8 @@
 # Trello settings
-trello_appkey: deadbeef
-trello_token: foobar
-trello_boardid: 1337Speak
+trello:
+  appkey: deadbeef
+  token: foobar
+  boardid: 1337Speak
 
 # Optional: set sync timeout (seconds)
 #sync_timeout: 120

@@ -1,7 +1,17 @@
 package trello
 
-import "github.com/adlio/trello"
+import (
+	api "github.com/adlio/trello"
+)
 
-func getClient() *trello.Client {
-	return trello.NewClient("foo", "bar")
+type Client struct {
+	api      *api.Client
+	settings TrelloSettings
+}
+
+func GetClient(settings TrelloSettings) *Client {
+	return &Client{
+		api:      api.NewClient(settings.AppKey, settings.Token),
+		settings: settings,
+	}
 }
