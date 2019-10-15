@@ -66,7 +66,6 @@ func (c *Client) UpdateTrello(tr *trello.Client) {
 			if err != nil {
 				panic(err)
 			}
-			log.Printf("github: attached url %s", item.url)
 		}
 	}
 

@@ -88,16 +88,18 @@ func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
 }
 
 func (c *Client) AttachLink(card *Card, url string) error {
-	apiCard, err := c.api.GetCard(card.id, api.Defaults())
+	apiCard, err := c.api.GetCard(card.id, api.Arguments{"attachments": "true"})
 	if err != nil {
 		return err
 	}
 	for _, attach := range apiCard.Attachments {
 		if attach.URL == url {
+			log.Printf("URL %s is already attached to this card", url)
 			return nil
 		}
 	}
 	attach := &api.Attachment{URL: url}
 	apiCard.AddURLAttachment(attach)
+	log.Printf("github: attached url %s", url)
 	return nil
 }
