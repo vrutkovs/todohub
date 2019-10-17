@@ -69,6 +69,12 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	log.Println("github: adding new cards")
 	for _, item := range searchResults {
+
+		if _, ok := cardsToRemove[item.title]; ok {
+			log.Printf("github: found existing card %s", item.title)
+			continue
+		}
+
 		card, err := wData.tr.AddItemToList(item.title, listID)
 		if err != nil {
 			panic(err)

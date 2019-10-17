@@ -63,7 +63,7 @@ func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
 		return nil, err
 	}
 	// Check that the card doesn't exist yet
-	cards, err := list.GetCards(api.Defaults())
+	cards, err := list.GetCards(api.Arguments{"filter": "all"})
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
 		return nil, err
 	}
 	// Check that the card doesn't exist yet
-	cards, err := list.GetCards(api.Defaults())
+	cards, err := list.GetCards(api.Arguments{"filter": "all"})
 	if err != nil {
 		return nil, err
 	}
