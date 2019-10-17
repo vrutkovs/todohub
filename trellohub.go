@@ -20,9 +20,7 @@ func main() {
 	gh.UpdateTrello(tr)
 
 	// Update on cron
-	go func() {
-		gocron.Every(s.SyncTimeout).Minutes().Do(gh.UpdateTrello, tr)
-		<-gocron.Start()
-	}()
+	gocron.Every(s.SyncTimeout).Minutes().Do(gh.UpdateTrello, tr)
+	<-gocron.Start()
 
 }
