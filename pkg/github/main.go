@@ -83,8 +83,7 @@ func (c *Client) UpdateTrello(tr *trello.Client) {
 		}
 	}
 
-	opt := &api.RepositoryListByOrgOptions{Type: "public"}
-	c.api.Repositories.ListByOrg(context.Background(), "github", opt)
+	log.Println("github update completed")
 }
 
 func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]IssueInfo, error) {
