@@ -8,6 +8,7 @@ import (
 	"github.com/vrutkovs/trellohub/pkg/trello"
 	"golang.org/x/oauth2"
 	"log"
+	"sync"
 )
 
 type Client struct {
@@ -19,6 +20,14 @@ type IssueInfo struct {
 	title string
 	url   string
 }
+
+type WorkerData struct {
+	query string
+	list  string
+	tr    *trello.Client
+}
+
+const PARALLEL_WORKERS = 5
 
 func GetClient(settings GithubSettings) *Client {
 	ctx := context.Background()
@@ -33,55 +42,70 @@ func GetClient(settings GithubSettings) *Client {
 	}
 }
 
+func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	query := wData.query
+	if len(c.settings.SearchPrefix) > 0 {
+		query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, wData.query)
+	}
+	searchResults, err := c.getIssueInfoForSearchQuery(query)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("github: fetched search results for list '%s'", wData.list)
+
+	listID, err := wData.tr.EnsureListExists(wData.list)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("github: got list ID %s", listID)
+
+	log.Println("github: fetching existing cards")
+	cardsToRemove, err := wData.tr.FetchCardsInList(listID)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("github: adding new cards")
+	for _, item := range searchResults {
+		card, err := wData.tr.AddItemToList(item.title, listID)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("github: created item %s", item.title)
+		err = wData.tr.AttachLink(card, item.url)
+		if err != nil {
+			panic(err)
+		}
+
+		delete(cardsToRemove, item.title)
+	}
+
+	log.Println("github: looking for old cards")
+	for _, id := range cardsToRemove {
+		wData.tr.CloseCard(id)
+	}
+}
+
 func (c *Client) UpdateTrello(tr *trello.Client) {
 	if c.settings.BoardID != "" {
 		tr.SetBoardID(c.settings.BoardID)
 	}
 
+	var wg sync.WaitGroup
+
 	log.Println("github: updating trello")
 	for list, searchQuery := range c.settings.GithubSearchList {
-		query := searchQuery
-		if len(c.settings.SearchPrefix) > 0 {
-			query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, searchQuery)
+		workerData := WorkerData{
+			query: searchQuery,
+			list:  list,
+			tr:    tr,
 		}
-		searchResults, err := c.getIssueInfoForSearchQuery(query)
-		if err != nil {
-			panic(err)
-		}
-		log.Printf("github: fetched search results for list '%s'", list)
-
-		listID, err := tr.EnsureListExists(list)
-		if err != nil {
-			panic(err)
-		}
-		log.Printf("github: got list ID %s", listID)
-
-		log.Println("github: fetching existing cards")
-		cardsToRemove, err := tr.FetchCardsInList(listID)
-		if err != nil {
-			panic(err)
-		}
-
-		log.Println("github: adding new cards")
-		for _, item := range searchResults {
-			card, err := tr.AddItemToList(item.title, listID)
-			if err != nil {
-				panic(err)
-			}
-			log.Printf("github: created item %s", item.title)
-			err = tr.AttachLink(card, item.url)
-			if err != nil {
-				panic(err)
-			}
-
-			delete(cardsToRemove, item.title)
-		}
-
-		log.Println("github: looking for old cards")
-		for _, id := range cardsToRemove {
-			tr.CloseCard(id)
-		}
+		wg.Add(1)
+		go c.githubWorker(workerData, &wg)
 	}
+	wg.Wait()
 
 	log.Println("github update completed")
 }
