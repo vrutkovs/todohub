@@ -56,6 +56,13 @@ func (c *Client) UpdateTrello(tr *trello.Client) {
 		}
 		log.Printf("github: got list ID %s", listID)
 
+		log.Println("github: fetching existing cards")
+		cardsToRemove, err := tr.FetchCardsInList(listID)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Println("github: adding new cards")
 		for _, item := range searchResults {
 			card, err := tr.AddItemToList(item.title, listID)
 			if err != nil {
@@ -66,6 +73,13 @@ func (c *Client) UpdateTrello(tr *trello.Client) {
 			if err != nil {
 				panic(err)
 			}
+
+			delete(cardsToRemove, item.title)
+		}
+
+		log.Println("github: looking for old cards")
+		for _, id := range cardsToRemove {
+			tr.CloseCard(id)
 		}
 	}
 

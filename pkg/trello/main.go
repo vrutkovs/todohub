@@ -103,3 +103,33 @@ func (c *Client) AttachLink(card *Card, url string) error {
 	log.Printf("github: attached url %s", url)
 	return nil
 }
+
+func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
+	list, err := c.api.GetList(listID, api.Defaults())
+	if err != nil {
+		return nil, err
+	}
+	// Check that the card doesn't exist yet
+	cards, err := list.GetCards(api.Defaults())
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]string, 0)
+	for _, card := range cards {
+		result[card.Name] = card.ID
+	}
+
+	return result, err
+}
+
+func (c *Client) CloseCard(id string) error {
+	card, err := c.api.GetCard(id, api.Defaults())
+	if err != nil {
+		return err
+	}
+	card.Closed = true
+	card.Update(api.Defaults())
+	log.Printf("Card %s closed", card.Name)
+	return nil
+}
