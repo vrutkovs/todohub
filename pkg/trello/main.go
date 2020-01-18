@@ -133,6 +133,7 @@ func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
 
 // CloseCard marks card as closed and removes it
 func (c *Client) CloseCard(id string) error {
+	// Mark card as closed
 	card, err := c.api.GetCard(id, api.Defaults())
 	if err != nil {
 		return err
@@ -142,7 +143,34 @@ func (c *Client) CloseCard(id string) error {
 	}
 	card.Closed = true
 	card.Update(api.Defaults())
-	log.Printf("Card %s closed", card.Name)
-	err = c.api.Delete(card.URL, api.Defaults(), card)
+	log.Printf("Card %s marked as closed", card.Name)
 	return err
+}
+
+// RemoveCardsFromList removes a list of card from the list
+func (c *Client) RemoveCardsFromList(listID string, cardsID []string) error {
+	list, err := c.api.GetList(listID, api.Defaults())
+	if err != nil {
+		return err
+	}
+	// Turn cards slice into a map
+	var cards map[string]int
+	for i, card := range list.Cards {
+		cards[card.ID] = i
+	}
+	// Remove cards with IDs in cardsID
+	for _, id := range cardsID {
+		delete(cards, id)
+	}
+	// Reassemble cars list
+	cardsList := make([]*api.Card, len(cards))
+	for _, cardIndex := range cards {
+		card := list.Cards[cardIndex]
+		cardsList = append(cardsList, card)
+	}
+
+	list.Cards = cardsList
+	list.Update(api.Defaults())
+	log.Printf("List %s has been updated", list.Name)
+	return nil
 }

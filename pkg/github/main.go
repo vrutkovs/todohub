@@ -95,8 +95,14 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 
 	log.Println("github: looking for old cards")
+	cardIDs := make([]string, len(cardsToRemove))
 	for _, id := range cardsToRemove {
 		wData.tr.CloseCard(id)
+		cardIDs = append(cardIDs, id)
+	}
+	err = wData.tr.RemoveCardsFromList(listID, cardIDs)
+	if err != nil {
+		panic(err)
 	}
 }
 
