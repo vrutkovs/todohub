@@ -13,7 +13,7 @@ import (
 
 type Client struct {
 	api      *api.Client
-	settings GithubSettings
+	settings Settings
 }
 
 type IssueInfo struct {
@@ -29,7 +29,7 @@ type WorkerData struct {
 
 const PARALLEL_WORKERS = 5
 
-func GetClient(settings GithubSettings) *Client {
+func GetClient(settings Settings) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: settings.Token},

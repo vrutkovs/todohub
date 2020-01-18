@@ -10,9 +10,9 @@ import (
 const DEFAULT_SYNC_TIMEOUT_MINUTES = 5
 
 type Settings struct {
-	Trello      trello.TrelloSettings `yaml:"trello"`
-	Github      github.GithubSettings `yaml:"github"`
-	SyncTimeout uint64                `yaml:"sync_timeout"`
+	Trello      trello.Settings `yaml:"trello"`
+	Github      github.Settings `yaml:"github"`
+	SyncTimeout uint64          `yaml:"sync_timeout"`
 }
 
 func LoadSettings(path string) (*Settings, error) {
