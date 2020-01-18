@@ -5,17 +5,20 @@ import (
 	"log"
 )
 
+// Client is a wrapper for trello client
 type Client struct {
 	api      *api.Client
 	board    *api.Board
 	settings TrelloSettings
 }
 
+// Card struct holds information about the card
 type Card struct {
 	id    string
 	title string
 }
 
+// GetClient returns trello client
 func GetClient(settings TrelloSettings) *Client {
 	c := &Client{
 		api:      api.NewClient(settings.AppKey, settings.Token),
@@ -29,6 +32,7 @@ func GetClient(settings TrelloSettings) *Client {
 	return c
 }
 
+// SetBoardID switches trello client to board with this ID
 func (c *Client) SetBoardID(id string) {
 	log.Printf("trello: using board %s", id)
 	board, err := c.api.GetBoard(id, api.Defaults())
@@ -38,6 +42,7 @@ func (c *Client) SetBoardID(id string) {
 	c.board = board
 }
 
+// EnsureListExists returns list ID if list with this name exists
 func (c *Client) EnsureListExists(name string) (string, error) {
 	log.Printf("Creating list %s", name)
 	lists, err := c.board.GetLists(api.Defaults())
@@ -57,6 +62,7 @@ func (c *Client) EnsureListExists(name string) (string, error) {
 	return list.ID, nil
 }
 
+// AddItemToList adds a text card to the list and return a pointer to Card
 func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
@@ -87,6 +93,7 @@ func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
 	}, nil
 }
 
+// AttachLink adds a URL as attachment to the card
 func (c *Client) AttachLink(card *Card, url string) error {
 	apiCard, err := c.api.GetCard(card.id, api.Arguments{"attachments": "true"})
 	if err != nil {
@@ -104,6 +111,7 @@ func (c *Client) AttachLink(card *Card, url string) error {
 	return nil
 }
 
+// FetchCardsInList returns a map of cards
 func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
@@ -123,6 +131,7 @@ func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
 	return result, err
 }
 
+// CloseCard marks card as closed and removes it
 func (c *Client) CloseCard(id string) error {
 	card, err := c.api.GetCard(id, api.Defaults())
 	if err != nil {
