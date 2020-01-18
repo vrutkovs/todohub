@@ -160,6 +160,7 @@ func (c *Client) RemoveCardsFromList(listID string, cardsID []string) error {
 	}
 	// Remove cards with IDs in cardsID
 	for _, id := range cardsID {
+		log.Printf("Removing card with id %s", id)
 		delete(cards, id)
 	}
 	// Reassemble cars list
