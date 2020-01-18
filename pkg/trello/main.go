@@ -160,8 +160,10 @@ func (c *Client) RemoveCardsFromList(listID string, cardsID []string) error {
 	}
 	// Remove cards with IDs in cardsID
 	for _, id := range cardsID {
-		log.Printf("Removing card with id %s", id)
-		delete(cards, id)
+		if len(id) != 0 {
+			log.Printf("Removing card with id %s", id)
+			delete(cards, id)
+		}
 	}
 	// Reassemble cars list
 	cardsList := make([]*api.Card, len(cards))
@@ -170,7 +172,7 @@ func (c *Client) RemoveCardsFromList(listID string, cardsID []string) error {
 		cardsList = append(cardsList, card)
 	}
 
-	list.Cards = cardsList
+	copy(cardsList, list.Cards)
 	list.Update(api.Defaults())
 	log.Printf("List %s has been updated", list.Name)
 	return nil
