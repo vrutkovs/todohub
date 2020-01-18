@@ -141,8 +141,7 @@ func (c *Client) CloseCard(id string) error {
 	if card.Closed == true {
 		return nil
 	}
-	card.Closed = true
-	card.Update(api.Defaults())
+	card.Update(api.Arguments{"closed": "true"})
 	log.Printf("Card %s marked as closed", card.Name)
 	return err
 }
