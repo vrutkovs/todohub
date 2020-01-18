@@ -134,5 +134,6 @@ func (c *Client) CloseCard(id string) error {
 	card.Closed = true
 	card.Update(api.Defaults())
 	log.Printf("Card %s closed", card.Name)
-	return nil
+	err = c.api.Delete(card.URL, api.Defaults(), card)
+	return err
 }
