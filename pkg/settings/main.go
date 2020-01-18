@@ -7,17 +7,20 @@ import (
 	"io/ioutil"
 )
 
-const DEFAULT_SYNC_TIMEOUT_MINUTES = 5
+// DefaultSyncTimeoutMinutes sets default sync period
+const DefaultSyncTimeoutMinutes = 5
 
+// Settings holds app-level settings
 type Settings struct {
 	Trello      trello.Settings `yaml:"trello"`
 	Github      github.Settings `yaml:"github"`
 	SyncTimeout uint64          `yaml:"sync_timeout"`
 }
 
+// LoadSettings creates Settings object from yaml
 func LoadSettings(path string) (*Settings, error) {
 	s := Settings{
-		SyncTimeout: DEFAULT_SYNC_TIMEOUT_MINUTES,
+		SyncTimeout: DefaultSyncTimeoutMinutes,
 	}
 
 	data, err := ioutil.ReadFile(path)
