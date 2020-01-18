@@ -51,6 +51,7 @@ func GetClient(settings Settings) *Client {
 func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	// Run the query
 	query := wData.query
 	if len(c.settings.SearchPrefix) > 0 {
 		query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, wData.query)
@@ -61,12 +62,14 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 	log.Printf("github: fetched search results for list '%s'", wData.list)
 
+	// Create a list if its missing
 	listID, err := wData.tr.EnsureListExists(wData.list)
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("github: got list ID %s", listID)
 
+	// Fetch existing cards and mark all cards for removal
 	log.Println("github: fetching existing cards")
 	cardsToRemove, err := wData.tr.FetchCardsInList(listID)
 	if err != nil {
@@ -78,9 +81,11 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 		if _, ok := cardsToRemove[item.title]; ok {
 			log.Printf("github: found existing card %s", item.title)
+			delete(cardsToRemove, item.title)
 			continue
 		}
 
+		// Add missing card
 		card, err := wData.tr.AddItemToList(item.title, listID)
 		if err != nil {
 			panic(err)
@@ -91,6 +96,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 			panic(err)
 		}
 
+		// Don't remove freshly added card
 		delete(cardsToRemove, item.title)
 	}
 
