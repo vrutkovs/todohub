@@ -9,7 +9,7 @@ import (
 type Client struct {
 	api      *api.Client
 	board    *api.Board
-	settings TrelloSettings
+	settings Settings
 }
 
 // Card struct holds information about the card
@@ -19,7 +19,7 @@ type Card struct {
 }
 
 // GetClient returns trello client
-func GetClient(settings TrelloSettings) *Client {
+func GetClient(settings Settings) *Client {
 	c := &Client{
 		api:      api.NewClient(settings.AppKey, settings.Token),
 		settings: settings,
