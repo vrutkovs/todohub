@@ -145,34 +145,3 @@ func (c *Client) CloseCard(id string) error {
 	log.Printf("Card %s marked as closed", card.Name)
 	return err
 }
-
-// RemoveCardsFromList removes a list of card from the list
-func (c *Client) RemoveCardsFromList(listID string, cardsID []string) error {
-	list, err := c.api.GetList(listID, api.Defaults())
-	if err != nil {
-		return err
-	}
-	// Turn cards slice into a map
-	var cards map[string]int
-	for i, card := range list.Cards {
-		cards[card.ID] = i
-	}
-	// Remove cards with IDs in cardsID
-	for _, id := range cardsID {
-		if len(id) != 0 {
-			log.Printf("Removing card with id %s", id)
-			delete(cards, id)
-		}
-	}
-	// Reassemble cars list
-	cardsList := make([]*api.Card, len(cards))
-	for _, cardIndex := range cards {
-		card := list.Cards[cardIndex]
-		cardsList = append(cardsList, card)
-	}
-
-	copy(cardsList, list.Cards)
-	list.Update(api.Defaults())
-	log.Printf("List %s has been updated", list.Name)
-	return nil
-}
