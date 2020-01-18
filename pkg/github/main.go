@@ -11,24 +11,29 @@ import (
 	"sync"
 )
 
+// Client holds information about github client
 type Client struct {
 	api      *api.Client
 	settings Settings
 }
 
+// IssueInfo represents an issue in search query
 type IssueInfo struct {
 	title string
 	url   string
 }
 
+// WorkerData holds info about worker payload
 type WorkerData struct {
 	query string
 	list  string
 	tr    *trello.Client
 }
 
-const PARALLEL_WORKERS = 5
+// ParallelWorkers is a number of worker threads run in parallel
+const ParallelWorkers = 5
 
+// GetClient returns github client
 func GetClient(settings Settings) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -42,6 +47,7 @@ func GetClient(settings Settings) *Client {
 	}
 }
 
+// githubWorker runs queries in github
 func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -94,6 +100,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 }
 
+// UpdateTrello runs search queries and applies changes in trello
 func (c *Client) UpdateTrello(tr *trello.Client) {
 	if c.settings.BoardID != "" {
 		tr.SetBoardID(c.settings.BoardID)
@@ -116,6 +123,7 @@ func (c *Client) UpdateTrello(tr *trello.Client) {
 	log.Println("github update completed")
 }
 
+// getIssueInfoForSearchQuery runs the query and returns a list of issues
 func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]IssueInfo, error) {
 	ctx := context.Background()
 	opts := &api.SearchOptions{Sort: "created", Order: "asc"}
