@@ -1,26 +1,22 @@
 package source
 
+import (
+	"github.com/vrutkovs/todohub/pkg/issue"
+	"github.com/vrutkovs/todohub/pkg/storage"
+)
+
 // Settings holds required methods for source API settings
 type Settings interface {
 	ID() string
-	Authenticate() interface{}
-	Storage() string
+	Storage() interface{}
 	Project() string
-	Lists() SourceList
+	Searches() map[string]string
 	Self() interface{}
 }
 
 // Client holds API
 type Client interface {
-	Settings() *Settings
-}
-
-// Issue represents an issue in search query
-type Issue interface {
-	Title() string
-	Url() string
-}
-
-type IssueList interface {
-	Name(string) []Issue
+	New(*Settings, *storage.Client)
+	Sync() error
+	Issues() []issue.Issue
 }
