@@ -95,7 +95,7 @@ func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
 		return nil, err
 	}
 
-	result := make([]Card, len(apiCards)-1)
+	result := make([]Card, 0)
 	for _, apiCard := range apiCards {
 		result = append(result, apiCardToCard(apiCard))
 	}
@@ -114,7 +114,7 @@ func (c *Client) GetIssues(listName string) ([]issue.Issue, error) {
 		return issues, err
 	}
 	// Convert Cards back to Issue
-	issues = make([]issue.Issue, len(cards)-1)
+	issues = make([]issue.Issue, 0)
 	for _, card := range cards {
 		issues = append(issues, card)
 	}

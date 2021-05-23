@@ -28,7 +28,7 @@ func (i *IssueList) Remove(title string) {
 	if _, ok := i.Get(title); !ok {
 		return
 	}
-	newList := make([]Issue, len(i.Issues)-1)
+	newList := make([]Issue, 0)
 	for _, issue := range i.Issues {
 		if issue.Title() == title {
 			continue

@@ -108,7 +108,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	// Build a new list of issues from search results
 	required := issue.IssueList{
-		Issues: make([]issue.Issue, len(searchResults)),
+		Issues: make([]issue.Issue, 0),
 	}
 	for _, issue := range searchResults {
 		required.Issues = append(required.Issues, GithubIssue{
@@ -120,23 +120,11 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	// Create an intersection from these two lists
 	interfaceIntersection := required.InterSection(existing)
 	intersection := issue.IssueList{
-		Issues: make([]issue.Issue, len(interfaceIntersection)-1),
+		Issues: make([]issue.Issue, 0),
 	}
 	for _, item := range interfaceIntersection {
 		i := item.(issue.Issue)
 		intersection.Issues = append(intersection.Issues, i)
-	}
-
-	// Add all cards from required which are not in intersection
-	log.Println("github: adding new cards")
-	for _, i := range required.Issues {
-		if _, ok := intersection.Get(i.Title()); !ok {
-			err := wData.storage.Create(wData.project, i)
-			if err != nil {
-				panic(err)
-			}
-			log.Printf("github: created item %s", i.Title())
-		}
 	}
 
 	// Remove all cards in existing which are not in intersection
@@ -148,6 +136,18 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 				panic(err)
 			}
 			log.Printf("github: removed item %s", i.Title())
+		}
+	}
+
+	// Add all cards from required which are not in intersection
+	log.Println("github: adding new cards")
+	for _, i := range required.Issues {
+		if _, ok := intersection.Get(i.Title()); !ok {
+			err := wData.storage.Create(wData.project, i)
+			if err != nil {
+				panic(err)
+			}
+			log.Printf("github: created item %s", i.Title())
 		}
 	}
 }
