@@ -51,7 +51,7 @@ func (a *IssueList) InterSection(b *IssueList, titleOnly bool) IssueList {
 				return bEl == aEl
 			}
 		})
-		if idx < len(b.Issues) {
+		if idx < len(b.Issues)+1 {
 			set.Issues = append(set.Issues, aEl)
 		}
 	}
