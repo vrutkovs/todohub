@@ -108,7 +108,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	// Build a new list of issues from search results
 	required := issue.IssueList{
-		Issues: make([]issue.Issue, len(searchResults)-1),
+		Issues: make([]issue.Issue, len(searchResults)),
 	}
 	for _, issue := range searchResults {
 		required.Issues = append(required.Issues, GithubIssue{
