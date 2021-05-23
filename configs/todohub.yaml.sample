@@ -13,8 +13,6 @@ source:
   github:
     # github personal token to increase rate limits
     token: bazbar
-    # Optional: custom storage
-    # storage: trello
     # Optional: custom project (board for Trello)
     # project: 1337Speak
 
