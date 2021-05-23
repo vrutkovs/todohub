@@ -1,8 +1,9 @@
 package trello
 
 import (
-	api "github.com/adlio/trello"
 	"log"
+
+	api "github.com/adlio/trello"
 )
 
 // Client is a wrapper for trello client
@@ -16,20 +17,6 @@ type Client struct {
 type Card struct {
 	id    string
 	title string
-}
-
-// GetClient returns trello client
-func GetClient(settings Settings) *Client {
-	c := &Client{
-		api:      api.NewClient(settings.AppKey, settings.Token),
-		settings: settings,
-	}
-	board, err := c.api.GetBoard(c.settings.BoardID, api.Defaults())
-	if err != nil {
-		panic(err)
-	}
-	c.board = board
-	return c
 }
 
 // SetBoardID switches trello client to board with this ID

@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
+	"github.com/vrutkovs/todohub/pkg/storage"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
 	"gopkg.in/yaml.v2"
 )
@@ -13,9 +14,19 @@ const DefaultSyncTimeoutMinutes = 5
 
 // Settings holds app-level settings
 type Settings struct {
-	Trello      trello.Settings `yaml:"trello"`
-	Github      github.Settings `yaml:"github"`
+	Storage     StorageSettings `yaml:"storage"`
+	Source      SourceSettings  `yaml:"source"`
 	SyncTimeout uint64          `yaml:"sync_timeout"`
+}
+
+// StorageSettings holds storage configs
+type StorageSettings struct {
+	Trello *trello.Settings `yaml:"trello,omitempty"`
+}
+
+// SourceSettings holds client configs
+type SourceSettings struct {
+	Github *github.Settings `yaml:"github,omitempty"`
 }
 
 // LoadSettings creates Settings object from yaml
@@ -35,4 +46,11 @@ func LoadSettings(path string) (*Settings, error) {
 	}
 
 	return &s, nil
+}
+
+func (s *StorageSettings) GetActiveStorage() storage.Settings {
+	if s.Trello != nil {
+		return s.Trello
+	}
+	return nil
 }
