@@ -3,10 +3,10 @@ package source
 // Settings holds required methods for source API settings
 type Settings interface {
 	ID() string
-	Authenticate() string
+	Authenticate() interface{}
 	Storage() string
 	Project() string
-	Lists() map[string]*Project
+	Lists() SourceList
 	Self() interface{}
 }
 
@@ -15,13 +15,12 @@ type Client interface {
 	Settings() *Settings
 }
 
-type Project interface {
-	Name() string
-	Query() string
-}
-
 // Issue represents an issue in search query
 type Issue interface {
 	Title() string
 	Url() string
+}
+
+type IssueList interface {
+	Name(string) []Issue
 }
