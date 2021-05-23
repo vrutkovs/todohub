@@ -161,6 +161,9 @@ func (c *Client) addItemToList(item string, listID string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
+	if apiCard.Closed {
+		apiCard.Unarchive()
+	}
 	return &Card{
 		id:    apiCard.ID,
 		title: apiCard.Name,
