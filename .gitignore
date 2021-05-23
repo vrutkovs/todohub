@@ -1,5 +1,6 @@
 # Binary
 /todohub
+/__debug_bin
 
 # Config
 /configs/todohub.yaml
