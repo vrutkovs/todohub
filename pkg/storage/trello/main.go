@@ -181,7 +181,7 @@ func (c *Client) attachLink(card *Card, url string) error {
 	}
 	attach := &api.Attachment{URL: url}
 	apiCard.AddURLAttachment(attach)
-	log.Printf("github: attached url %s", url)
+	log.Printf("trello: attached url %s", url)
 	return nil
 }
 
