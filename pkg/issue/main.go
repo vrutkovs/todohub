@@ -1,7 +1,6 @@
 package issue
 
 import (
-	"reflect"
 	"sort"
 )
 
@@ -38,18 +37,22 @@ func (i *IssueList) Remove(title string) {
 	i.Issues = newList
 }
 
-func (a *IssueList) InterSection(b IssueList) []interface{} {
-	set := make([]interface{}, 0)
-	av := reflect.ValueOf(a.Issues)
-	bv := reflect.ValueOf(b.Issues)
+func (a *IssueList) InterSection(b *IssueList, titleOnly bool) IssueList {
+	set := IssueList{
+		Issues: make([]Issue, 0),
+	}
 
-	for i := 0; i < av.Len(); i++ {
-		el := av.Index(i).Interface()
-		idx := sort.Search(bv.Len(), func(i int) bool {
-			return bv.Index(i).Interface() == el
+	for _, aEl := range a.Issues {
+		idx := sort.Search(len(b.Issues), func(i int) bool {
+			bEl := b.Issues[i]
+			if titleOnly {
+				return bEl.Title() == aEl.Title()
+			} else {
+				return bEl == aEl
+			}
 		})
-		if idx < bv.Len() && bv.Index(idx).Interface() == el {
-			set = append(set, el)
+		if idx < len(b.Issues) {
+			set.Issues = append(set.Issues, aEl)
 		}
 	}
 

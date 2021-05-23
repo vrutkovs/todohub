@@ -89,6 +89,16 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		panic(err)
 	}
 	log.Printf("github: fetched search results for project '%s'", wData.project)
+	// Build a new list of issues from search results
+	required := issue.IssueList{
+		Issues: make([]issue.Issue, 0),
+	}
+	for _, issue := range searchResults {
+		required.Issues = append(required.Issues, GithubIssue{
+			title: issue.title,
+			url:   issue.url,
+		})
+	}
 
 	// Create a list if its missing
 	log.Println("github: fetching existing cards")
@@ -103,30 +113,22 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		panic(err)
 	}
 	existing := issue.IssueList{
-		Issues: existingIssues,
+		Issues: make([]issue.Issue, len(existingIssues)),
 	}
 
-	// Build a new list of issues from search results
-	required := issue.IssueList{
-		Issues: make([]issue.Issue, 0),
+	// Drop internal values to make intersection work
+	for i, issue := range existingIssues {
+		existing.Issues[i] = GithubIssue{
+			title: issue.Title(),
+			url:   issue.Url(),
+		}
 	}
-	for _, issue := range searchResults {
-		required.Issues = append(required.Issues, GithubIssue{
-			title: issue.title,
-			url:   issue.url,
-		})
-	}
+
+	// TODO: Get storage setting
+	titleOnlyComparison := true
 
 	// Create an intersection from these two lists
-	interfaceIntersection := required.InterSection(existing)
-	intersection := issue.IssueList{
-		Issues: make([]issue.Issue, 0),
-	}
-	for _, item := range interfaceIntersection {
-		i := item.(issue.Issue)
-		intersection.Issues = append(intersection.Issues, i)
-	}
-
+	intersection := required.InterSection(&existing, titleOnlyComparison)
 	// Remove all cards in existing which are not in intersection
 	log.Println("github: removing old cards")
 	for _, i := range existing.Issues {
