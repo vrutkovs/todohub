@@ -11,7 +11,7 @@ import (
 type Client struct {
 	api      *api.Client
 	board    *api.Board
-	settings Settings
+	settings *Settings
 }
 
 // Card struct holds information about the card
@@ -31,14 +31,17 @@ func (c Card) Url() string {
 }
 
 // New returns trello client
-func (c *Client) New(s Settings) {
-	c.settings = s
-	c.api = api.NewClient(s.appKey, s.token)
-	board, err := c.api.GetBoard(s.boardID, api.Defaults())
+func New(s *Settings) *Client {
+	clientApi := api.NewClient(s.appKey, s.token)
+	board, err := clientApi.GetBoard(s.boardID, api.Defaults())
 	if err != nil {
 		panic(err)
 	}
-	c.board = board
+	return &Client{
+		api:      clientApi,
+		board:    board,
+		settings: s,
+	}
 }
 
 // ensureListExists returns list ID if list with this name exists

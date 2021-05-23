@@ -20,20 +20,22 @@ const ParallelWorkers = 5
 type Client struct {
 	api       *api.Client
 	storage   *storage.Client
-	settings  Settings
+	settings  *Settings
 	issueList GithubIssueList
 }
 
 // New returns github client
-func (c *Client) New(s Settings, storage *storage.Client) {
+func New(s *Settings, storage *storage.Client) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: c.settings.token},
+		&oauth2.Token{AccessToken: s.token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	c.api = api.NewClient(tc)
-	c.storage = storage
-	c.settings = s
+	return &Client{
+		api:      api.NewClient(tc),
+		storage:  storage,
+		settings: s,
+	}
 }
 
 // GithubIssue implements source.Issue

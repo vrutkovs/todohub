@@ -12,7 +12,6 @@ type Settings interface {
 
 // Client holds API
 type Client interface {
-	New(*Settings)
 	CreateProject(string) error
 	GetIssues(string) ([]issue.Issue, error)
 	Create(string, issue.Issue) error

@@ -22,7 +22,7 @@ func (s Settings) Self() interface{} {
 func (s Settings) Authenticate() interface{} {
 	c := &Client{
 		api:      api.NewClient(s.appKey, s.token),
-		settings: s,
+		settings: &s,
 	}
 	board, err := c.api.GetBoard(c.settings.boardID, api.Defaults())
 	if err != nil {

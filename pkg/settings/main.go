@@ -3,7 +3,6 @@ package settings
 import (
 	"io/ioutil"
 
-	"github.com/vrutkovs/todohub/pkg/source"
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
@@ -49,16 +48,9 @@ func LoadSettings(path string) (*Settings, error) {
 	return &s, nil
 }
 
-func (s *StorageSettings) GetActiveStorage() storage.Settings {
+func (s *StorageSettings) GetActiveStorageClient() storage.Client {
 	if s.Trello != nil {
-		return s.Trello
-	}
-	return nil
-}
-
-func (s *SourceSettings) GetActiveSource() source.Settings {
-	if s.Github != nil {
-		return s.Github
+		return trello.New(s.Trello)
 	}
 	return nil
 }
