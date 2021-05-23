@@ -28,7 +28,7 @@ type Client struct {
 func New(s *Settings, storage *storage.Client) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: s.token},
+		&oauth2.Token{AccessToken: s.Token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	return &Client{
@@ -81,8 +81,8 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	// Run the query
 	query := wData.query
-	if len(c.settings.searchPrefix) > 0 {
-		query = fmt.Sprintf("%s %s", c.settings.searchPrefix, wData.query)
+	if len(c.settings.SearchPrefix) > 0 {
+		query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, wData.query)
 	}
 	searchResults, err := c.getIssueInfoForSearchQuery(query)
 	if err != nil {
@@ -157,7 +157,7 @@ func (c *Client) Sync() {
 	var wg sync.WaitGroup
 
 	log.Println("github: updating trello")
-	for project, query := range c.settings.searchList {
+	for project, query := range c.settings.SearchList {
 		workerData := WorkerData{
 			project: project,
 			query:   query,

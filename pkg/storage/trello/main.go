@@ -32,8 +32,8 @@ func (c Card) Url() string {
 
 // New returns trello client
 func New(s *Settings) *Client {
-	clientApi := api.NewClient(s.appKey, s.token)
-	board, err := clientApi.GetBoard(s.boardID, api.Defaults())
+	clientApi := api.NewClient(s.AppKey, s.Token)
+	board, err := clientApi.GetBoard(s.BoardID, api.Defaults())
 	if err != nil {
 		panic(err)
 	}

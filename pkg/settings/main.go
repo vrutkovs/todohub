@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
@@ -21,12 +22,12 @@ type Settings struct {
 
 // StorageSettings holds storage configs
 type StorageSettings struct {
-	Trello *trello.Settings `yaml:"trello,omitempty"`
+	Trello *trello.Settings `yaml:"trello"`
 }
 
 // SourceSettings holds client configs
 type SourceSettings struct {
-	Github *github.Settings `yaml:"github,omitempty"`
+	Github *github.Settings `yaml:"github"`
 }
 
 // LoadSettings creates Settings object from yaml
@@ -48,9 +49,9 @@ func LoadSettings(path string) (*Settings, error) {
 	return &s, nil
 }
 
-func (s *StorageSettings) GetActiveStorageClient() storage.Client {
+func (s *StorageSettings) GetActiveStorageClient() (storage.Client, error) {
 	if s.Trello != nil {
-		return trello.New(s.Trello)
+		return trello.New(s.Trello), nil
 	}
-	return nil
+	return nil, fmt.Errorf("no valid storage settings found")
 }

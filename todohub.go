@@ -14,9 +14,9 @@ func main() {
 	}
 
 	// Find active storage
-	storageClient := s.Storage.GetActiveStorageClient()
-	if storageClient == nil {
-		panic("No valid storage client found")
+	storageClient, err := s.Storage.GetActiveStorageClient()
+	if err != nil {
+		panic(err)
 	}
 
 	if s.Source.Github != nil {

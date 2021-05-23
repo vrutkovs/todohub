@@ -4,9 +4,9 @@ import api "github.com/adlio/trello"
 
 // Settings holds info about trello connnection
 type Settings struct {
-	appKey  string `yaml:"appkey"`
-	token   string `yaml:"token"`
-	boardID string `yaml:"project"`
+	AppKey  string `yaml:"appkey"`
+	Token   string `yaml:"token"`
+	BoardID string `yaml:"boardid"`
 }
 
 // Implement storage.Settings
@@ -21,10 +21,10 @@ func (s Settings) Self() interface{} {
 
 func (s Settings) Authenticate() interface{} {
 	c := &Client{
-		api:      api.NewClient(s.appKey, s.token),
+		api:      api.NewClient(s.AppKey, s.Token),
 		settings: &s,
 	}
-	board, err := c.api.GetBoard(c.settings.boardID, api.Defaults())
+	board, err := c.api.GetBoard(c.settings.BoardID, api.Defaults())
 	if err != nil {
 		panic(err)
 	}
@@ -33,5 +33,5 @@ func (s Settings) Authenticate() interface{} {
 }
 
 func (s Settings) Project() string {
-	return s.boardID
+	return s.BoardID
 }
