@@ -40,8 +40,8 @@ func (i *IssueList) Remove(title string) {
 
 func (a *IssueList) InterSection(b IssueList) []interface{} {
 	set := make([]interface{}, 0)
-	av := reflect.ValueOf(a)
-	bv := reflect.ValueOf(b)
+	av := reflect.ValueOf(a.Issues)
+	bv := reflect.ValueOf(b.Issues)
 
 	for i := 0; i < av.Len(); i++ {
 		el := av.Index(i).Interface()
