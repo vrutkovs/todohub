@@ -4,6 +4,7 @@ import (
 	"log"
 
 	api "github.com/adlio/trello"
+	"github.com/vrutkovs/todohub/pkg/issue"
 )
 
 // Client is a wrapper for trello client
@@ -17,21 +18,31 @@ type Client struct {
 type Card struct {
 	id    string
 	title string
+	url   string
 }
 
-// SetBoardID switches trello client to board with this ID
-func (c *Client) SetBoardID(id string) {
-	log.Printf("trello: using board %s", id)
-	board, err := c.api.GetBoard(id, api.Defaults())
+func (c Card) Title() string {
+	return c.title
+}
+
+func (c Card) Url() string {
+	// TODO: Fetch first attached URL
+	return c.url
+}
+
+// New returns trello client
+func (c *Client) New(s Settings) {
+	c.settings = s
+	c.api = api.NewClient(s.appKey, s.token)
+	board, err := c.api.GetBoard(s.boardID, api.Defaults())
 	if err != nil {
 		panic(err)
 	}
 	c.board = board
 }
 
-// EnsureListExists returns list ID if list with this name exists
-func (c *Client) EnsureListExists(name string) (string, error) {
-	log.Printf("Creating list %s", name)
+// ensureListExists returns list ID if list with this name exists
+func (c *Client) ensureListExists(name string) (string, error) {
 	lists, err := c.board.GetLists(api.Defaults())
 	if err != nil {
 		return "", err
@@ -42,6 +53,7 @@ func (c *Client) EnsureListExists(name string) (string, error) {
 		}
 	}
 	// List was not found, needs to be created
+	log.Printf("Creating list %s", name)
 	list, err := c.api.CreateList(c.board, name, api.Defaults())
 	if err != nil {
 		return "", err
@@ -49,8 +61,68 @@ func (c *Client) EnsureListExists(name string) (string, error) {
 	return list.ID, nil
 }
 
+func (c *Client) CreateProject(name string) error {
+	_, err := c.ensureListExists(name)
+	return err
+}
+
+// FetchCardsInList returns a map of cards
+func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
+	list, err := c.api.GetList(listID, api.Defaults())
+	if err != nil {
+		return nil, err
+	}
+	// Check that the card doesn't exist yet
+	apiCards, err := list.GetCards(api.Arguments{"filter": "all"})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Card, len(apiCards)-1)
+	for _, apiCard := range apiCards {
+		card := Card{
+			id:    apiCard.ID,
+			title: apiCard.Name,
+			url:   apiCard.Attachments[0].URL,
+		}
+		result = append(result, card)
+	}
+
+	return result, err
+}
+
+func (c *Client) GetIssues(listName string) ([]issue.Issue, error) {
+	issues := make([]issue.Issue, 0)
+	listID, err := c.ensureListExists(listName)
+	if err != nil {
+		return issues, err
+	}
+	cards, err := c.fetchCardsInList(listID)
+	if err != nil {
+		return issues, err
+	}
+	// Convert Cards back to Issue
+	issues = make([]issue.Issue, len(cards)-1)
+	for _, card := range cards {
+		issues = append(issues, card)
+	}
+	return issues, nil
+}
+
+func (c *Client) Create(listName string, item issue.Issue) error {
+	listID, err := c.ensureListExists(listName)
+	if err != nil {
+		return err
+	}
+	card, err := c.addItemToList(item.Title(), listID)
+	if err != nil {
+		return err
+	}
+	return c.attachLink(card, item.Url())
+}
+
 // AddItemToList adds a text card to the list and return a pointer to Card
-func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
+func (c *Client) addItemToList(item string, listID string) (*Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
 		return nil, err
@@ -81,7 +153,7 @@ func (c *Client) AddItemToList(item string, listID string) (*Card, error) {
 }
 
 // AttachLink adds a URL as attachment to the card
-func (c *Client) AttachLink(card *Card, url string) error {
+func (c *Client) attachLink(card *Card, url string) error {
 	apiCard, err := c.api.GetCard(card.id, api.Arguments{"attachments": "true"})
 	if err != nil {
 		return err
@@ -98,37 +170,30 @@ func (c *Client) AttachLink(card *Card, url string) error {
 	return nil
 }
 
-// FetchCardsInList returns a map of cards
-func (c *Client) FetchCardsInList(listID string) (map[string]string, error) {
-	list, err := c.api.GetList(listID, api.Defaults())
-	if err != nil {
-		return nil, err
-	}
-	// Check that the card doesn't exist yet
-	cards, err := list.GetCards(api.Arguments{"filter": "all"})
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]string, 0)
-	for _, card := range cards {
-		result[card.Name] = card.ID
-	}
-
-	return result, err
-}
-
 // CloseCard marks card as closed and removes it
-func (c *Client) CloseCard(id string) error {
-	// Mark card as closed
-	card, err := c.api.GetCard(id, api.Defaults())
+func (c *Client) Delete(listName string, item issue.Issue) error {
+	// Lookup card by title in the list
+	listID, err := c.ensureListExists(listName)
 	if err != nil {
 		return err
 	}
-	if card.Closed == true {
-		return nil
+	cardList, err := c.fetchCardsInList(listID)
+	if err != nil {
+		return err
 	}
-	card.Update(api.Arguments{"closed": "true"})
-	log.Printf("Card %s marked as closed", card.Name)
+	for _, i := range cardList {
+		if i.Title() == item.Title() {
+			// Mark card as closed
+			card, err := c.api.GetCard(i.id, api.Defaults())
+			if err != nil {
+				return err
+			}
+			if card.Closed {
+				return nil
+			}
+			card.Update(api.Arguments{"closed": "true"})
+			break
+		}
+	}
 	return err
 }

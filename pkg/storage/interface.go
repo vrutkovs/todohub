@@ -13,9 +13,8 @@ type Settings interface {
 // Client holds API
 type Client interface {
 	New(*Settings)
-	Sync() error
 	CreateProject(string) error
-	GetIssues(string) []issue.Issue
+	GetIssues(string) ([]issue.Issue, error)
 	Create(string, issue.Issue) error
 	Delete(string, issue.Issue) error
 }
