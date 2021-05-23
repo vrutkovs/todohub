@@ -2,10 +2,10 @@
 FROM quay.io/fedora/fedora:32-x86_64 AS build-env
 RUN dnf install -y golang
 ADD . /src
-RUN cd /src && go build -o trellohub
+RUN cd /src && go build -o todohub
 
 # final stage
 FROM registry.fedoraproject.org/fedora-minimal:31
 WORKDIR /app
-COPY --from=build-env /src/trellohub /app/
-ENTRYPOINT ./trellohub
+COPY --from=build-env /src/todohub /app/
+ENTRYPOINT ./todohub

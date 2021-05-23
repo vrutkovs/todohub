@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/jasonlvhit/gocron"
-	"github.com/vrutkovs/trellohub/pkg/github"
-	"github.com/vrutkovs/trellohub/pkg/settings"
-	"github.com/vrutkovs/trellohub/pkg/trello"
+	"github.com/vrutkovs/todohub/pkg/github"
+	"github.com/vrutkovs/todohub/pkg/settings"
+	"github.com/vrutkovs/todohub/pkg/trello"
 )
 
 func main() {
-	s, err := settings.LoadSettings("configs/trellohub.yaml")
+	s, err := settings.LoadSettings("configs/todohub.yaml")
 	if err != nil {
 		panic(err)
 	}

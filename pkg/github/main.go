@@ -3,12 +3,13 @@ package github
 import (
 	"context"
 	"fmt"
-	retry "github.com/avast/retry-go"
-	api "github.com/google/go-github/v28/github"
-	"github.com/vrutkovs/trellohub/pkg/trello"
-	"golang.org/x/oauth2"
 	"log"
 	"sync"
+
+	retry "github.com/avast/retry-go"
+	api "github.com/google/go-github/v28/github"
+	"github.com/vrutkovs/todohub/pkg/trello"
+	"golang.org/x/oauth2"
 )
 
 // Client holds information about github client

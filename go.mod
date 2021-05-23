@@ -1,4 +1,4 @@
-module github.com/vrutkovs/trellohub
+module github.com/vrutkovs/todohub
 
 go 1.12
 

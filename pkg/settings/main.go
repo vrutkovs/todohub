@@ -1,10 +1,11 @@
 package settings
 
 import (
-	"github.com/vrutkovs/trellohub/pkg/github"
-	"github.com/vrutkovs/trellohub/pkg/trello"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+
+	"github.com/vrutkovs/todohub/pkg/github"
+	"github.com/vrutkovs/todohub/pkg/trello"
+	"gopkg.in/yaml.v2"
 )
 
 // DefaultSyncTimeoutMinutes sets default sync period

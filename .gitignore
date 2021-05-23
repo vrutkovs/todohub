@@ -1,8 +1,8 @@
 # Binary
-/trellohub
+/todohub
 
 # Config
-/configs/trellohub.yaml
+/configs/todohub.yaml
 
 # Binaries for programs and plugins
 *.exe
