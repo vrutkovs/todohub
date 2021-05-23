@@ -206,7 +206,14 @@ func (c *Client) Delete(listName string, item issue.Issue) error {
 			if card.Closed {
 				return nil
 			}
-			card.Update(api.Arguments{"closed": "true"})
+			err = card.Archive()
+			if err != nil {
+				return err
+			}
+			err = card.Delete()
+			if err != nil {
+				return err
+			}
 			break
 		}
 	}
