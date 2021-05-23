@@ -97,6 +97,9 @@ func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
 
 	result := make([]Card, 0)
 	for _, apiCard := range apiCards {
+		if apiCard.Closed {
+			continue
+		}
 		result = append(result, apiCardToCard(apiCard))
 	}
 
