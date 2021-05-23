@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/jasonlvhit/gocron"
-	"github.com/vrutkovs/todohub/pkg/github"
 	"github.com/vrutkovs/todohub/pkg/settings"
-	"github.com/vrutkovs/todohub/pkg/trello"
+	"github.com/vrutkovs/todohub/pkg/source/github"
+	"github.com/vrutkovs/todohub/pkg/storage/trello"
 )
 
 func main() {

@@ -3,8 +3,8 @@ package settings
 import (
 	"io/ioutil"
 
-	"github.com/vrutkovs/todohub/pkg/github"
-	"github.com/vrutkovs/todohub/pkg/trello"
+	"github.com/vrutkovs/todohub/pkg/source/github"
+	"github.com/vrutkovs/todohub/pkg/storage/trello"
 	"gopkg.in/yaml.v2"
 )
 

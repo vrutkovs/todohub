@@ -8,7 +8,7 @@ import (
 
 	retry "github.com/avast/retry-go"
 	api "github.com/google/go-github/v28/github"
-	"github.com/vrutkovs/todohub/pkg/trello"
+	"github.com/vrutkovs/todohub/pkg/storage/trello"
 	"golang.org/x/oauth2"
 )
 
