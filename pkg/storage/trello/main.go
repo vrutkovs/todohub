@@ -69,6 +69,20 @@ func (c *Client) CreateProject(name string) error {
 	return err
 }
 
+func apiCardToCard(apiCard *api.Card) Card {
+	var url string
+	if len(apiCard.Attachments) == 0 {
+		url = ""
+	} else {
+		url = apiCard.Attachments[0].URL
+	}
+	return Card{
+		id:    apiCard.ID,
+		title: apiCard.Name,
+		url:   url,
+	}
+}
+
 // FetchCardsInList returns a map of cards
 func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
@@ -83,12 +97,7 @@ func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
 
 	result := make([]Card, len(apiCards)-1)
 	for _, apiCard := range apiCards {
-		card := Card{
-			id:    apiCard.ID,
-			title: apiCard.Name,
-			url:   apiCard.Attachments[0].URL,
-		}
-		result = append(result, card)
+		result = append(result, apiCardToCard(apiCard))
 	}
 
 	return result, err
