@@ -222,3 +222,9 @@ func (c *Client) Delete(listName string, item issue.Issue) error {
 	}
 	return err
 }
+
+// Sync ensures changes are commited
+func (c *Client) Sync() error {
+	// trello changes are auto-synced
+	return nil
+}

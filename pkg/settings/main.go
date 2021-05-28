@@ -6,6 +6,7 @@ import (
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage"
+	"github.com/vrutkovs/todohub/pkg/storage/todoist"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
 	"gopkg.in/yaml.v2"
 )
@@ -22,7 +23,8 @@ type Settings struct {
 
 // StorageSettings holds storage configs
 type StorageSettings struct {
-	Trello *trello.Settings `yaml:"trello"`
+	Trello  *trello.Settings  `yaml:"trello"`
+	Todoist *todoist.Settings `yaml:"todoist"`
 }
 
 // SourceSettings holds client configs
@@ -52,6 +54,9 @@ func LoadSettings(path string) (*Settings, error) {
 func (s *StorageSettings) GetActiveStorageClient() (storage.Client, error) {
 	if s.Trello != nil {
 		return trello.New(s.Trello), nil
+	}
+	if s.Todoist != nil {
+		return todoist.New(s.Todoist), nil
 	}
 	return nil, fmt.Errorf("no valid storage settings found")
 }

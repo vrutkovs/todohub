@@ -155,22 +155,25 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 }
 
 // UpdateTrello runs search queries and applies changes in trello
-func (c *Client) Sync() {
+func (c *Client) Sync() error {
 	var wg sync.WaitGroup
+	storageClient := *c.storage
 
-	log.Println("github: updating trello")
+	log.Println("github: updating storage")
 	for project, query := range c.settings.SearchList {
 		workerData := WorkerData{
 			project: project,
 			query:   query,
-			storage: *c.storage,
+			storage: storageClient,
 		}
 		wg.Add(1)
-		go c.githubWorker(workerData, &wg)
+		//go c.githubWorker(workerData, &wg)
+		c.githubWorker(workerData, &wg)
 	}
 	wg.Wait()
-
 	log.Println("github update completed")
+	return storageClient.Sync()
+
 }
 
 // getIssueInfoForSearchQuery runs the query and returns a list of issues

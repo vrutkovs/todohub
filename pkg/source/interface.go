@@ -11,12 +11,11 @@ type Settings interface {
 	Storage() interface{}
 	Project() string
 	Searches() map[string]string
-	Self() interface{}
 }
 
 // Client holds API
 type Client interface {
 	New(*Settings, *storage.Client)
-	Sync() error
+	Sync()
 	Issues() []issue.Issue
 }

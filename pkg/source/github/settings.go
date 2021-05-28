@@ -13,10 +13,6 @@ func (s Settings) ID() string {
 	return "github"
 }
 
-func (s Settings) Self() interface{} {
-	return &s
-}
-
 func (s Settings) Project() string {
 	return s.BoardID
 }
