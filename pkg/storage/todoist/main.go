@@ -201,3 +201,9 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 func (c *Client) Sync() error {
 	return c.api.Commit(*c.context)
 }
+
+// CompareByTitleOnly returns true if issues should be compared by title only
+// Some storages may not be able to fetch other details like URL in GetIssues
+func (s *Client) CompareByTitleOnly() bool {
+	return true
+}

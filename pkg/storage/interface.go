@@ -10,6 +10,7 @@ type Settings interface {
 
 // Client holds API
 type Client interface {
+	CompareByTitleOnly() bool
 	CreateProject(string) error
 	GetIssues(string) ([]issue.Issue, error)
 	Create(string, issue.Issue) error

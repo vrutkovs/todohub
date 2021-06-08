@@ -124,8 +124,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		}
 	}
 
-	// TODO: Get storage setting
-	titleOnlyComparison := true
+	titleOnlyComparison := (*c.storage).CompareByTitleOnly()
 
 	// Create an intersection from these two lists
 	intersection := required.InterSection(&existing, titleOnlyComparison)
