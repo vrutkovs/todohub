@@ -1,6 +1,7 @@
 package issue
 
 import (
+	"reflect"
 	"sort"
 )
 
@@ -45,16 +46,20 @@ func (a *IssueList) InterSection(b *IssueList, titleOnly bool) IssueList {
 	for _, aEl := range a.Issues {
 		idx := sort.Search(len(b.Issues), func(i int) bool {
 			bEl := b.Issues[i]
-			if titleOnly {
-				return bEl.Title() == aEl.Title()
-			} else {
-				return bEl == aEl
-			}
+			return compareElements(aEl, bEl, titleOnly)
 		})
-		if idx < len(b.Issues)+1 {
+		if idx < len(b.Issues) && compareElements(b.Issues[idx], aEl, titleOnly) {
 			set.Issues = append(set.Issues, aEl)
 		}
 	}
 
 	return set
+}
+
+func compareElements(a, b Issue, titleOnly bool) bool {
+	if titleOnly {
+		return a.Title() == b.Title()
+	} else {
+		return reflect.DeepEqual(a, b)
+	}
 }
