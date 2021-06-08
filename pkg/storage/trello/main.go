@@ -178,7 +178,7 @@ func (c *Client) attachLink(card *Card, url string) error {
 	}
 	for _, attach := range apiCard.Attachments {
 		if attach.URL == url {
-			log.Printf("URL %s is already attached to this card", url)
+			// log.Printf("URL %s is already attached to this card", url)
 			return nil
 		}
 	}

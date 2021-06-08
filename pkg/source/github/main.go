@@ -88,20 +88,20 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("github: fetched search results for project '%s'", wData.project)
+	// log.Printf("github: fetched search results for project '%s'", wData.project)
 	// Build a new list of issues from search results
 	required := issue.IssueList{
-		Issues: make([]issue.Issue, 0),
+		Issues: make([]issue.Issue, len(searchResults)),
 	}
-	for _, issue := range searchResults {
-		required.Issues = append(required.Issues, GithubIssue{
+	for i, issue := range searchResults {
+		required.Issues[i] = GithubIssue{
 			title: issue.title,
 			url:   issue.url,
-		})
+		}
 	}
 
 	// Create a list if its missing
-	log.Println("github: fetching existing cards")
+	// log.Println("github: fetching existing cards")
 	err = wData.storage.CreateProject(wData.project)
 	if err != nil {
 		panic(err)
@@ -129,7 +129,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	// Create an intersection from these two lists
 	intersection := required.InterSection(&existing, titleOnlyComparison)
 	// Remove all cards in existing which are not in intersection
-	log.Println("github: removing old cards")
+	// log.Println("github: removing old cards")
 	for _, i := range existing.Issues {
 		if _, ok := intersection.Get(i.Title()); !ok {
 			err := wData.storage.Delete(wData.project, i)
@@ -141,7 +141,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 
 	// Add all cards from required which are not in intersection
-	log.Println("github: adding new cards")
+	// log.Println("github: adding new cards")
 	for _, i := range required.Issues {
 		if _, ok := intersection.Get(i.Title()); !ok {
 			err := wData.storage.Create(wData.project, i)
@@ -158,7 +158,7 @@ func (c *Client) Sync() error {
 	var wg sync.WaitGroup
 	storageClient := *c.storage
 
-	log.Println("github: updating storage")
+	// log.Println("github: updating storage")
 	for project, query := range c.settings.SearchList {
 		workerData := WorkerData{
 			project: project,
@@ -170,7 +170,7 @@ func (c *Client) Sync() error {
 		c.githubWorker(workerData, &wg)
 	}
 	wg.Wait()
-	log.Println("github update completed")
+	// log.Println("github update completed")
 	return storageClient.Sync()
 
 }
