@@ -151,6 +151,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 			log.Printf("github: created item %s", i.Title())
 		}
 	}
+	wData.storage.Sync()
 }
 
 // UpdateTrello runs search queries and applies changes in trello
