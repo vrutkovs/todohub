@@ -205,5 +205,5 @@ func (c *Client) Sync() error {
 // CompareByTitleOnly returns true if issues should be compared by title only
 // Some storages may not be able to fetch other details like URL in GetIssues
 func (s *Client) CompareByTitleOnly() bool {
-	return false
+	return true
 }
