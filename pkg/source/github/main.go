@@ -127,29 +127,26 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	titleOnlyComparison := (*c.storage).CompareByTitleOnly()
 
 	// Create an intersection from these two lists
-	intersection := required.InterSection(&existing, titleOnlyComparison)
+	hashExisting := existing.MakeHashList(titleOnlyComparison)
+	hashRequired := required.MakeHashList(titleOnlyComparison)
 	// Remove all cards in existing which are not in intersection
 	// log.Println("github: removing old cards")
-	for _, i := range existing.Issues {
-		if _, ok := intersection.Get(i.Title()); !ok {
-			err := wData.storage.Delete(wData.project, i)
-			if err != nil {
-				panic(err)
-			}
-			log.Printf("github: removed item %s", i.Title())
+	for _, el := range issue.OuterSection(hashExisting, hashRequired).Issues {
+		err := wData.storage.Delete(wData.project, el)
+		if err != nil {
+			panic(err)
 		}
+		log.Printf("github: removed item %s", el.Title())
 	}
 
 	// Add all cards from required which are not in intersection
 	// log.Println("github: adding new cards")
-	for _, i := range required.Issues {
-		if _, ok := intersection.Get(i.Title()); !ok {
-			err := wData.storage.Create(wData.project, i)
-			if err != nil {
-				panic(err)
-			}
-			log.Printf("github: created item %s", i.Title())
+	for _, i := range issue.OuterSection(hashRequired, hashExisting).Issues {
+		err := wData.storage.Create(wData.project, i)
+		if err != nil {
+			panic(err)
 		}
+		log.Printf("github: created item %s", i.Title())
 	}
 	wData.storage.Sync()
 }

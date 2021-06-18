@@ -1,8 +1,8 @@
 package issue
 
 import (
-	"reflect"
-	"sort"
+	"crypto/sha256"
+	"fmt"
 )
 
 // Issue represents an issue in search query
@@ -38,28 +38,35 @@ func (i *IssueList) Remove(title string) {
 	i.Issues = newList
 }
 
-func (a *IssueList) InterSection(b *IssueList, titleOnly bool) IssueList {
+func asSha256(o Issue, titleOnly bool) string {
+	h := sha256.New()
+	var obj string
+	if titleOnly {
+		obj = fmt.Sprintf("%v", o.Title())
+	} else {
+		obj = fmt.Sprintf("%v", o)
+	}
+	h.Write([]byte(obj))
+
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func (l *IssueList) MakeHashList(titleOnly bool) map[string]Issue {
+	hashMap := make(map[string]Issue, len(l.Issues))
+	for _, aEl := range l.Issues {
+		hashMap[asSha256(aEl, titleOnly)] = aEl
+	}
+	return hashMap
+}
+
+func OuterSection(hashA, hashB map[string]Issue) IssueList {
 	set := IssueList{
 		Issues: make([]Issue, 0),
 	}
-
-	for _, aEl := range a.Issues {
-		idx := sort.Search(len(b.Issues), func(i int) bool {
-			bEl := b.Issues[i]
-			return compareElements(aEl, bEl, titleOnly)
-		})
-		if idx < len(b.Issues) && compareElements(b.Issues[idx], aEl, titleOnly) {
-			set.Issues = append(set.Issues, aEl)
+	for hash, el := range hashA {
+		if _, ok := hashB[hash]; !ok {
+			set.Issues = append(set.Issues, el)
 		}
 	}
-
 	return set
-}
-
-func compareElements(a, b Issue, titleOnly bool) bool {
-	if titleOnly {
-		return a.Title() == b.Title()
-	} else {
-		return reflect.DeepEqual(a, b)
-	}
 }
