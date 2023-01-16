@@ -60,9 +60,20 @@ func New(s *Settings) *Client {
 		panic(err)
 	}
 	clientAPI.Project.GetAll()
-	project := clientAPI.Project.FindOneByName(s.Project)
+	var project *api.Project
+	if s.ProjectID != "" {
+		projectID := api.ID(s.ProjectID)
+		projectResponse, err := clientAPI.Project.Get(ctx, projectID)
+		if err != nil {
+			panic(err)
+		}
+		project = &projectResponse.Project
+	}
+	if s.ProjectName != "" {
+		project = clientAPI.Project.FindOneByName(s.ProjectName)
+	}
 	if project == nil {
-		project, err = api.NewProject(s.Project, &api.NewProjectOpts{})
+		project, err = api.NewProject(s.ProjectName, &api.NewProjectOpts{})
 		if err != nil {
 			panic(err)
 		}
