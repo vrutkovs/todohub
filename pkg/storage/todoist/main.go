@@ -216,6 +216,7 @@ func (c *Client) Sync() error {
 		log.Printf("Error: %s", err)
 		time.Sleep(time.Minute * 15)
 	}
+	log.Printf("Done")
 	return err
 }
 
