@@ -569,8 +569,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
-github.com/vrutkovs/go-todoist v0.2.3-0.20230116085719-57b48a8b16e3 h1:h6CHIRcDcXsdGeRHs5meC4PYOLmLW1i+IP/KH0njdTQ=
-github.com/vrutkovs/go-todoist v0.2.3-0.20230116085719-57b48a8b16e3/go.mod h1:JuPC2w8kk1CjnxvWzyHyNu7fFo/8asLKjm/q4nh8+3U=
+github.com/vrutkovs/go-todoist v0.2.3-0.20230116100802-42bc5a2f874e h1:SOsL8vo97k8nUFXXZqbYkeJlUyGSFz+ToaDZ1alGhaI=
+github.com/vrutkovs/go-todoist v0.2.3-0.20230116100802-42bc5a2f874e/go.mod h1:JuPC2w8kk1CjnxvWzyHyNu7fFo/8asLKjm/q4nh8+3U=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
