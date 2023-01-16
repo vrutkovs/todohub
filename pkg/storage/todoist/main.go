@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 
 	api "github.com/kobtea/go-todoist/todoist"
 	"github.com/vrutkovs/todohub/pkg/issue"
@@ -54,12 +55,14 @@ func (c Item) Url() string {
 // New returns todoist client
 func New(s *Settings) *Client {
 	clientAPI, err := api.NewClient("", s.Token, "*", "", nil)
-	ctx := context.TODO()
-	clientAPI.FullSync(ctx, []api.Command{})
 	if err != nil {
 		panic(err)
 	}
-	clientAPI.Project.GetAll()
+	ctx := context.TODO()
+	err = clientAPI.FullSync(ctx, []api.Command{})
+	if err != nil {
+		panic(err)
+	}
 	var project *api.Project
 	if s.ProjectID != "" {
 		projectID := api.ID(s.ProjectID)
@@ -210,7 +213,13 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 }
 
 func (c *Client) Sync() error {
-	return c.api.Commit(*c.context)
+	log.Printf("Syncing")
+	err := c.api.Commit(*c.context)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		time.Sleep(time.Minute * 15)
+	}
+	return err
 }
 
 // CompareByTitleOnly returns true if issues should be compared by title only
