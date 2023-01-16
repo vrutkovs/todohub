@@ -109,6 +109,10 @@ func (c *Client) ensureSectionExists(name string) (api.ID, error) {
 	if err != nil {
 		return "", err
 	}
+	err = c.Sync()
+	if err != nil {
+		return "", err
+	}
 	return section.ID, nil
 }
 
@@ -132,6 +136,7 @@ func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 	allProjectItems := c.api.Item.FindByProjectIDs([]api.ID{c.project.ID})
 
 	for _, item := range allProjectItems {
+
 		if item.SectionID == sectionID {
 			result = append(result, apiItemToItem(&item))
 		}
