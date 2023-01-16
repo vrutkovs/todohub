@@ -140,7 +140,6 @@ func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 }
 
 func (c *Client) GetIssues(sectionName string) ([]issue.Issue, error) {
-	c.api.FullSync(*c.context, []api.Command{})
 	issues := make([]issue.Issue, 0)
 	sectionID, err := c.ensureSectionExists(sectionName)
 	if err != nil {
@@ -163,7 +162,6 @@ func buildMarkdownLink(title, url string) string {
 }
 
 func (c *Client) Create(sectionName string, item issue.Issue) error {
-	c.api.FullSync(*c.context, []api.Command{})
 	sectionID, err := c.ensureSectionExists(sectionName)
 	if err != nil {
 		return err
@@ -190,7 +188,6 @@ func (c *Client) addItemToSection(text string, sectionID api.ID) error {
 
 // CloseCard marks card as closed and removes it
 func (c *Client) Delete(sectionName string, item issue.Issue) error {
-	c.api.FullSync(*c.context, []api.Command{})
 	// Lookup item by title in the section
 	sectionID, err := c.ensureSectionExists(sectionName)
 	if err != nil {
