@@ -14,7 +14,7 @@ import (
 )
 
 // ParallelWorkers is a number of worker threads run in parallel
-const ParallelWorkers = 5
+const ParallelWorkers = 1
 
 // Client holds information about github client
 type Client struct {
