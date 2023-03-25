@@ -156,7 +156,9 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		}
 		log.Printf("github: created item %s", i.Title())
 	}
-	wData.storage.Sync(query)
+  if err := wData.storage.Sync(query); err != nil {
+    panic(err)
+  }
 }
 
 // Sync runs search queries and applies changes in storage
