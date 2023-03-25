@@ -167,7 +167,9 @@ func (c *Client) addItemToList(item string, listID string) (*Card, error) {
 		return nil, err
 	}
 	if apiCard.Closed {
-		apiCard.Unarchive()
+    if err := apiCard.Unarchive(); err != nil {
+      return nil, err
+    }
 	}
 	return &Card{
 		id:    apiCard.ID,
@@ -188,7 +190,9 @@ func (c *Client) attachLink(card *Card, url string) error {
 		}
 	}
 	attach := &api.Attachment{URL: url}
-	apiCard.AddURLAttachment(attach)
+  if err := apiCard.AddURLAttachment(attach); err != nil {
+    return err
+  }
 	log.Printf("trello: attached url %s", url)
 	return nil
 }
