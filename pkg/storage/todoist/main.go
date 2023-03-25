@@ -25,9 +25,10 @@ type Item struct {
 	text string
 }
 
+var titleRegex = regexp.MustCompile(`\[(?P<title>.*)\]\((?P<link>.*)\)`)
+
 func (c Item) match() []string {
-	re := regexp.MustCompile(`\[(?P<title>.*)\]\((?P<link>.*)\)`)
-	m := re.FindAllStringSubmatch(c.text, -1)
+	m := titleRegex.FindAllStringSubmatch(c.text, -1)
 	if len(m) == 0 {
 		return nil
 	}
