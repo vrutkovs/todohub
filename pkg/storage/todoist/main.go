@@ -228,7 +228,7 @@ func (c *Client) addItemToSection(text string, sectionID api.ID, labelID string)
 	item, err := api.NewItem(text, &api.NewItemOpts{
 		ProjectID: c.project.ID,
 		SectionID: sectionID,
-		Labels: []string{labelID},
+		Labels:    []string{labelID},
 	})
 	if err != nil {
 		return err
