@@ -23,6 +23,7 @@ type Client struct {
 type Item struct {
 	id   api.ID
 	text string
+	repo string
 }
 
 var titleRegex = regexp.MustCompile(`\[(?P<title>.*)\]\((?P<link>.*)\)`)
@@ -55,7 +56,7 @@ func (c Item) Url() string {
 
 // Repo extracts valid tags
 func (c Item) Repo() string {
-	return ""
+	return c.repo
 }
 
 // New returns todoist client
@@ -122,6 +123,33 @@ func (c *Client) ensureSectionExists(name string) (api.ID, error) {
 	return section.ID, nil
 }
 
+// ensureLabelExists returns label ID if label with this name exists
+func (c *Client) ensureLabelExists(name string) (string, error) {
+	log.Printf("Looking up label %s", name)
+	label := c.api.Label.FindOneByName(name)
+	if label != nil {
+		log.Printf("Found label %#v", label)
+		return label.ID, nil
+	}
+	// Label was not found, needs to be created
+	log.Printf("Creating label %s", name)
+	label, err := api.NewLabel(name, &api.NewLabelOpts{})
+	if err != nil {
+		return "", err
+	}
+	log.Printf("Label to be created %#v", label)
+	addedLabel, err := c.api.Label.Add(*label)
+	if err != nil {
+		return "", err
+	}
+	log.Printf("Fetched label %#v", addedLabel)
+	err = c.Sync("after adding label")
+	if err != nil {
+		return "", err
+	}
+	return label.ID, nil
+}
+
 // CreateProject ensures section is created
 func (c *Client) CreateProject(name string) error {
 	// c.api.FullSync(*c.context, []api.Command{})
@@ -129,10 +157,20 @@ func (c *Client) CreateProject(name string) error {
 	return err
 }
 
-func apiItemToItem(apiItem *api.Item) Item {
+func (c *Client) apiItemToItem(apiItem *api.Item) Item {
+	firstLabel := ""
+	for _, labelID := range apiItem.Labels {
+		label := c.api.Label.FindOneByName(labelID)
+		if label == nil {
+			continue
+		}
+		firstLabel = label.Name
+		break
+	}
 	return Item{
 		id:   apiItem.ID,
 		text: apiItem.Content,
+		repo: firstLabel,
 	}
 }
 
@@ -144,7 +182,7 @@ func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 	for _, item := range allProjectItems {
 
 		if item.SectionID == sectionID {
-			result = append(result, apiItemToItem(&item))
+			result = append(result, c.apiItemToItem(&item))
 		}
 	}
 	return result, nil
@@ -177,15 +215,20 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
+	labelID, err := c.ensureLabelExists(item.Repo())
+	if err != nil {
+		return err
+	}
 	markDownTitle := buildMarkdownLink(item.Title(), item.Url())
-	return c.addItemToSection(markDownTitle, sectionID)
+	return c.addItemToSection(markDownTitle, sectionID, labelID)
 }
 
 // addItemToSection adds a text card to the list and return a pointer to Card
-func (c *Client) addItemToSection(text string, sectionID api.ID) error {
+func (c *Client) addItemToSection(text string, sectionID api.ID, labelID string) error {
 	item, err := api.NewItem(text, &api.NewItemOpts{
 		ProjectID: c.project.ID,
 		SectionID: sectionID,
+		Labels: []string{labelID},
 	})
 	if err != nil {
 		return err
@@ -226,6 +269,10 @@ func (c *Client) Sync(description string) error {
 	if err != nil {
 		log.Printf("Error: %s", err)
 		time.Sleep(time.Minute * 15)
+	}
+	err = c.api.FullSync(context.Background(), []api.Command{})
+	if err != nil {
+		panic(err)
 	}
 	log.Printf("Done")
 	return err

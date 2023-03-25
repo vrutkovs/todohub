@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/avast/retry-go"
@@ -195,7 +196,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, 
 				ii := GithubIssue{
 					title: issue.GetTitle(),
 					url:   issue.GetHTMLURL(),
-					repo: repoSlug(issue.Repository),
+					repo: repoSlug(issue.GetRepositoryURL()),
 				}
 				results = append(results, ii)
 			}
@@ -218,16 +219,10 @@ func isCritical(err error) bool {
 }
 
 // Build repo slug from Repository
-func repoSlug(repo *api.Repository) string {
-	if repo == nil {
+func repoSlug(repoUrl string) string {
+	splitString := strings.Split(repoUrl, "/")
+	if len(splitString) < 3{
 		return ""
 	}
-	owner := ""
-	if repo.Owner != nil {
-		owner = repo.Owner.GetName()
-	} else if repo.GetOrganization() != nil {
-		owner = repo.GetOrganization().GetName()
-	}
-	name := repo.GetName()
-	return fmt.Sprintf("%s/%s", owner, name )
+	return fmt.Sprintf("%s/%s", splitString[len(splitString)-2], splitString[len(splitString)-1])
 }
