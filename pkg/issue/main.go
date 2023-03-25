@@ -12,9 +12,12 @@ type Issue interface {
 	Repo() string
 }
 
+// IssueList represents a list of issues
 type IssueList struct {
 	Issues []Issue
 }
+
+var h = sha256.New()
 
 func (i *IssueList) Get(title string) (Issue, bool) {
 	for _, issue := range i.Issues {
@@ -40,7 +43,7 @@ func (i *IssueList) Remove(title string) {
 }
 
 func asSha256(o Issue, titleOnly bool) string {
-	h := sha256.New()
+	defer h.Reset()
 	var obj string
 	if titleOnly {
 		obj = fmt.Sprintf("%v", o.Title())
@@ -48,7 +51,6 @@ func asSha256(o Issue, titleOnly bool) string {
 		obj = fmt.Sprintf("%v", o)
 	}
 	h.Write([]byte(obj))
-
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 

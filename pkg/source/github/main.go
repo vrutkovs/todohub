@@ -43,7 +43,7 @@ func New(s *Settings, storage *storage.Client) *Client {
 type GithubIssue struct {
 	title string
 	url   string
-	repo string
+	repo  string
 }
 
 func (i GithubIssue) Title() string {
@@ -103,7 +103,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		required.Issues[i] = GithubIssue{
 			title: issue.title,
 			url:   issue.url,
-			repo: issue.repo,
+			repo:  issue.repo,
 		}
 	}
 
@@ -128,7 +128,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		existing.Issues[i] = GithubIssue{
 			title: issue.Title(),
 			url:   issue.Url(),
-			repo : issue.Repo(),
+			repo:  issue.Repo(),
 		}
 	}
 
@@ -156,9 +156,9 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		}
 		log.Printf("github: created item %s", i.Title())
 	}
-  if err := wData.storage.Sync(query); err != nil {
-    panic(err)
-  }
+	if err := wData.storage.Sync(query); err != nil {
+		panic(err)
+	}
 }
 
 // Sync runs search queries and applies changes in storage
@@ -198,7 +198,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, 
 				ii := GithubIssue{
 					title: issue.GetTitle(),
 					url:   issue.GetHTMLURL(),
-					repo: repoSlug(issue.GetRepositoryURL()),
+					repo:  repoSlug(issue.GetRepositoryURL()),
 				}
 				results = append(results, ii)
 			}
@@ -223,7 +223,7 @@ func isCritical(err error) bool {
 // Build repo slug from Repository
 func repoSlug(repoUrl string) string {
 	splitString := strings.Split(repoUrl, "/")
-	if len(splitString) < 3{
+	if len(splitString) < 3 {
 		return ""
 	}
 	return fmt.Sprintf("%s/%s", splitString[len(splitString)-2], splitString[len(splitString)-1])
