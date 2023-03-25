@@ -21,8 +21,8 @@ func main() {
 
 	if s.Source.Github != nil {
 		gh := github.New(s.Source.Github, &storageClient)
-		gh.Sync()
-		gocron.Every(s.SyncTimeout).Minutes().Do(gh.Sync)
+		gocron.Every(s.SyncTimeout).Minutes().Do(gh.Sync, "periodically")
+		gh.Sync("on startup")
 	}
 
 	// Start cron

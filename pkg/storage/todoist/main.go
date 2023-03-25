@@ -110,7 +110,7 @@ func (c *Client) ensureSectionExists(name string) (api.ID, error) {
 	if err != nil {
 		return "", err
 	}
-	err = c.Sync()
+	err = c.Sync("after section was created")
 	if err != nil {
 		return "", err
 	}
@@ -215,8 +215,8 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 	return err
 }
 
-func (c *Client) Sync() error {
-	log.Printf("Syncing")
+func (c *Client) Sync(description string) error {
+	log.Printf("Syncing %s", description)
 	err := c.api.Commit(*c.context)
 	if err != nil {
 		log.Printf("Error: %s", err)

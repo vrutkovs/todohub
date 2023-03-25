@@ -15,5 +15,5 @@ type Client interface {
 	GetIssues(string) ([]issue.Issue, error)
 	Create(string, issue.Issue) error
 	Delete(string, issue.Issue) error
-	Sync() error
+	Sync(string) error
 }

@@ -148,15 +148,15 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		}
 		log.Printf("github: created item %s", i.Title())
 	}
-	wData.storage.Sync()
+	wData.storage.Sync(query)
 }
 
-// UpdateTrello runs search queries and applies changes in trello
-func (c *Client) Sync() error {
+// Sync runs search queries and applies changes in storage
+func (c *Client) Sync(description string) error {
 	var wg sync.WaitGroup
 	storageClient := *c.storage
 
-	// log.Println("github: updating storage")
+	log.Printf("Syncing %s", description)
 	for project, query := range c.settings.SearchList {
 		workerData := WorkerData{
 			project: project,
@@ -168,8 +168,8 @@ func (c *Client) Sync() error {
 		c.githubWorker(workerData, &wg)
 	}
 	wg.Wait()
-	// log.Println("github update completed")
-	return storageClient.Sync()
+	log.Println("github update completed")
+	return nil
 
 }
 
