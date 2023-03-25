@@ -42,6 +42,7 @@ func New(s *Settings, storage *storage.Client) *Client {
 type GithubIssue struct {
 	title string
 	url   string
+	repo string
 }
 
 func (i GithubIssue) Title() string {
@@ -50,6 +51,10 @@ func (i GithubIssue) Title() string {
 
 func (i GithubIssue) Url() string {
 	return i.url
+}
+
+func (i GithubIssue) Repo() string {
+	return i.repo
 }
 
 // GithubIssueList implements source.IssueList
@@ -97,6 +102,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		required.Issues[i] = GithubIssue{
 			title: issue.title,
 			url:   issue.url,
+			repo: issue.repo,
 		}
 	}
 
@@ -121,6 +127,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		existing.Issues[i] = GithubIssue{
 			title: issue.Title(),
 			url:   issue.Url(),
+			repo : issue.Repo(),
 		}
 	}
 
@@ -188,6 +195,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, 
 				ii := GithubIssue{
 					title: issue.GetTitle(),
 					url:   issue.GetHTMLURL(),
+					repo: repoSlug(issue.Repository),
 				}
 				results = append(results, ii)
 			}
@@ -207,4 +215,19 @@ func isCritical(err error) bool {
 		return false
 	}
 	return true
+}
+
+// Build repo slug from Repository
+func repoSlug(repo *api.Repository) string {
+	if repo == nil {
+		return ""
+	}
+	owner := ""
+	if repo.Owner != nil {
+		owner = repo.Owner.GetName()
+	} else if repo.GetOrganization() != nil {
+		owner = repo.GetOrganization().GetName()
+	}
+	name := repo.GetName()
+	return fmt.Sprintf("%s/%s", owner, name )
 }

@@ -53,6 +53,11 @@ func (c Item) Url() string {
 	return matches[2]
 }
 
+// Repo extracts valid tags
+func (c Item) Repo() string {
+	return ""
+}
+
 // New returns todoist client
 func New(s *Settings) *Client {
 	clientAPI, err := api.NewClient("", s.Token, "*", "", nil)

@@ -9,6 +9,7 @@ import (
 type Issue interface {
 	Title() string
 	Url() string
+	Repo() string
 }
 
 type IssueList struct {

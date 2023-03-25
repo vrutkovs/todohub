@@ -30,6 +30,11 @@ func (c Card) Url() string {
 	return c.url
 }
 
+func (c Card) Repo() string {
+	// TODO: Find repo in contents
+	return ""
+}
+
 // New returns trello client
 func New(s *Settings) *Client {
 	clientApi := api.NewClient(s.AppKey, s.Token)
