@@ -32,13 +32,21 @@ type SourceSettings struct {
 	Github *github.Settings `yaml:"github"`
 }
 
+func readFile(path string) ([]byte, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 // LoadSettings creates Settings object from yaml
 func LoadSettings(path string) (*Settings, error) {
 	s := Settings{
 		SyncTimeout: DefaultSyncTimeoutMinutes,
 	}
 
-	data, err := ioutil.ReadFile(path)
+	data, err := readFile(path)
 	if err != nil {
 		return nil, err
 	}
