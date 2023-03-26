@@ -96,10 +96,18 @@ var _ = Describe("Issue List", func() {
 		issueListB := IssueList{
 			Issues: []Issue{issueB},
 		}
-		Expect(OuterSection(issueListAll.MakeHashList(true), issueListEmpty.MakeHashList(true))).Should(Equal(issueListAll))
-		Expect(OuterSection(issueListEmpty.MakeHashList(true), issueListAll.MakeHashList(true))).Should(Equal(issueListEmpty))
-		Expect(OuterSection(issueListAll.MakeHashList(true), issueListA.MakeHashList(true))).Should(Equal(issueListB))
-		Expect(OuterSection(issueListAll.MakeHashList(true), issueListB.MakeHashList(true))).Should(Equal(issueListA))
+		outerSection := OuterSection(issueListAll.MakeHashList(true), issueListEmpty.MakeHashList(true))
+		Expect(len(outerSection.Issues)).Should(Equal(2))
+		Expect(outerSection.Issues).Should(ContainElements(issueA, issueB))
+
+		outerSection = OuterSection(issueListEmpty.MakeHashList(true), issueListAll.MakeHashList(true))
+		Expect(outerSection).Should(Equal(issueListEmpty))
+
+		outerSection = OuterSection(issueListAll.MakeHashList(true), issueListA.MakeHashList(true))
+		Expect(outerSection).Should(Equal(issueListB))
+
+		outerSection = OuterSection(issueListAll.MakeHashList(true), issueListB.MakeHashList(true))
+		Expect(outerSection).Should(Equal(issueListA))
 	})
 
 })
