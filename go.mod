@@ -14,4 +14,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace github.com/kobtea/go-todoist => github.com/vrutkovs/go-todoist v0.2.3-0.20230325123542-928a5c3dd402
+replace github.com/kobtea/go-todoist => github.com/vrutkovs/go-todoist v0.2.3-0.20230326103331-b1e66b4e3f9a
