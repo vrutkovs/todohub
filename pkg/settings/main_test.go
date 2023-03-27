@@ -32,6 +32,12 @@ func (f FakeReadFiler) fakeReadFile(filename string) ([]byte, error) {
 	return ioutil.ReadAll(buf)
 }
 
+var errFileRead = errors.New("no such file")
+
+func (f FakeReadFiler) fakeReadFileThrowsError(filename string) ([]byte, error) {
+	return []byte{}, errFileRead
+}
+
 func mockSettings(s Settings) (string, error) {
 	data, err := yaml.Marshal(s)
 	if err != nil {
@@ -78,6 +84,30 @@ var _ = DescribeTable("LoadSettings",
 	},
 	),
 )
+
+var _ = Describe("LoadSettings: errors", func() {
+
+	It("wraps read error", func() {
+		data, err := mockSettings(Settings{})
+		Expect(err).NotTo(HaveOccurred())
+		f := FakeReadFiler{
+			Str: data,
+		}
+		s, err := LoadSettings("/no/such/file", f.fakeReadFileThrowsError)
+		Expect(err).To(MatchError(errFileRead))
+		Expect(s).To(BeNil())
+	})
+
+	It("wraps unmarshal error", func() {
+		data := `{"name":what?}`
+		f := FakeReadFiler{
+			Str: data,
+		}
+		s, err := LoadSettings("/dev/null", f.fakeReadFile)
+		Expect(err).To(MatchError(errors.New("yaml: did not find expected ',' or '}'")))
+		Expect(s).To(BeNil())
+	})
+})
 
 type trelloError struct {
 	msg  string
