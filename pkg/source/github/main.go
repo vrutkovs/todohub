@@ -223,7 +223,7 @@ func isCritical(err error) bool {
 // Build repo slug from Repository
 func repoSlug(repoUrl string) string {
 	splitString := strings.Split(repoUrl, "/")
-	if len(splitString) < 3 {
+	if len(splitString) < 4 {
 		return ""
 	}
 	return fmt.Sprintf("%s/%s", splitString[len(splitString)-2], splitString[len(splitString)-1])

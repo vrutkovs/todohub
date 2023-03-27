@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-
-	// "errors"
-
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -14,9 +11,6 @@ import (
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage/todoist"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
-
-	// trelloapi "github.com/adlio/trello"
-	// todoistapi "github.com/kobtea/go-todoist/todoist"
 
 	"testing"
 
