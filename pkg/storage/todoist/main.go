@@ -60,22 +60,22 @@ func (c Item) Repo() string {
 }
 
 // New returns todoist client
-func New(s *Settings) *Client {
+func New(s *Settings) (*Client, error) {
 	clientAPI, err := api.NewClient("", s.Token, "*", "", nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	ctx := context.TODO()
 	err = clientAPI.FullSync(ctx, []api.Command{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var project *api.Project
 	if s.ProjectID != "" {
 		projectID := api.ID(s.ProjectID)
 		projectResponse, err := clientAPI.Project.Get(ctx, projectID)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		project = &projectResponse.Project
 	}
@@ -85,11 +85,11 @@ func New(s *Settings) *Client {
 	if project == nil {
 		project, err = api.NewProject(s.ProjectName, &api.NewProjectOpts{})
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-		_, err := clientAPI.Project.Add(*project)
+		_, err = clientAPI.Project.Add(*project)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 	return &Client{
@@ -97,7 +97,7 @@ func New(s *Settings) *Client {
 		project:  project,
 		settings: s,
 		context:  &ctx,
-	}
+	}, nil
 }
 
 // ensureSectionExists returns list ID if list with this name exists

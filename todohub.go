@@ -4,11 +4,12 @@ import (
 	"github.com/jasonlvhit/gocron"
 	"github.com/vrutkovs/todohub/pkg/settings"
 	"github.com/vrutkovs/todohub/pkg/source/github"
+	"io/ioutil"
 )
 
 func main() {
 	// Parse settings file
-	s, err := settings.LoadSettings("configs/todohub.yaml")
+	s, err := settings.LoadSettings("configs/todohub.yaml", ioutil.ReadFile)
 	if err != nil {
 		panic(err)
 	}

@@ -1,12 +1,13 @@
 package issue
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestCart(t *testing.T) {
+func TestIssueInterface(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Issues")
 }
@@ -63,6 +64,12 @@ var _ = Describe("Issue List", func() {
 		Expect(issueList.Issues).Should(Equal([]Issue{issueA}))
 		issueList.Remove(issueA.title)
 		Expect(issueList.Issues).Should(Equal([]Issue{}))
+
+		issueList = IssueList{
+			Issues: []Issue{issueA, issueB},
+		}
+		issueList.Remove("no-such-issue")
+		Expect(issueList.Issues).Should(ContainElements(issueA, issueB))
 	})
 
 	It("can build hash list", func() {

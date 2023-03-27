@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v28 v28.1.1
 	github.com/jasonlvhit/gocron v0.0.1
 	github.com/kobtea/go-todoist v0.2.2
-	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.5
 	golang.org/x/oauth2 v0.4.0
 	gopkg.in/yaml.v2 v2.4.0

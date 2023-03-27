@@ -36,17 +36,17 @@ func (c Card) Repo() string {
 }
 
 // New returns trello client
-func New(s *Settings) *Client {
+func New(s *Settings) (*Client, error) {
 	clientApi := api.NewClient(s.AppKey, s.Token)
 	board, err := clientApi.GetBoard(s.BoardID, api.Defaults())
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return &Client{
 		api:      clientApi,
 		board:    board,
 		settings: s,
-	}
+	}, nil
 }
 
 // ensureListExists returns list ID if list with this name exists

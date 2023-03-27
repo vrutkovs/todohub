@@ -2,7 +2,6 @@ package settings
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage"
@@ -32,16 +31,11 @@ type SourceSettings struct {
 	Github *github.Settings `yaml:"github"`
 }
 
-func readFile(path string) ([]byte, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
+// ReadFile is a function to read file and output a slice of bytes
+type ReadFile func(filename string) ([]byte, error)
 
 // LoadSettings creates Settings object from yaml
-func LoadSettings(path string) (*Settings, error) {
+func LoadSettings(path string, readFile ReadFile) (*Settings, error) {
 	s := Settings{
 		SyncTimeout: DefaultSyncTimeoutMinutes,
 	}
@@ -61,10 +55,12 @@ func LoadSettings(path string) (*Settings, error) {
 
 func (s *StorageSettings) GetActiveStorageClient() (storage.Client, error) {
 	if s.Trello != nil {
-		return trello.New(s.Trello), nil
+		if s.Trello.AppKey != "" && s.Trello.Token != "" && s.Trello.BoardID != "" {
+			return trello.New(s.Trello)
+		}
 	}
 	if s.Todoist != nil {
-		return todoist.New(s.Todoist), nil
+		return todoist.New(s.Todoist)
 	}
 	return nil, fmt.Errorf("no valid storage settings found")
 }
