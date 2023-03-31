@@ -1,10 +1,11 @@
 package main
 
 import (
+	"io/ioutil"
+
 	"github.com/jasonlvhit/gocron"
 	"github.com/vrutkovs/todohub/pkg/settings"
 	"github.com/vrutkovs/todohub/pkg/source/github"
-	"io/ioutil"
 )
 
 func main() {
@@ -22,8 +23,12 @@ func main() {
 
 	if s.Source.Github != nil {
 		gh := github.New(s.Source.Github, &storageClient)
-		gocron.Every(s.SyncTimeout).Minutes().Do(gh.Sync, "periodically")
-		gh.Sync("on startup")
+		if err := gocron.Every(s.SyncTimeout).Minutes().Do(gh.Sync, "periodically"); err != nil {
+			panic(err)
+		}
+		if err := gh.Sync("on startup"); err != nil {
+			panic(err)
+		}
 	}
 
 	// Start cron
