@@ -14,6 +14,10 @@ jobs:
     needs: build
     uses: cristalhq/.github/.github/workflows/vuln.yml@v0.4.0
 
+  lint:
+    needs: build
+    uses: cristalhq/.github/.github/workflows/lint.yml@v0.4.0
+
   build-and-push-image:
     needs: build
     runs-on: ubuntu-latest
