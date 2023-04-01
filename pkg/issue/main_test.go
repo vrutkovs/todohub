@@ -43,7 +43,7 @@ var _ = Describe("Issue List", func() {
 	}
 
 	It("can fetch item by name", func() {
-		issueList := IssueList{
+		issueList := List{
 			Issues: []Issue{issueA, issueB},
 		}
 		newIssueA, found := issueList.Get(issueA.title)
@@ -57,7 +57,7 @@ var _ = Describe("Issue List", func() {
 	})
 
 	It("can remove item by name", func() {
-		issueList := IssueList{
+		issueList := List{
 			Issues: []Issue{issueA, issueB},
 		}
 		issueList.Remove(issueB.title)
@@ -65,7 +65,7 @@ var _ = Describe("Issue List", func() {
 		issueList.Remove(issueA.title)
 		Expect(issueList.Issues).Should(Equal([]Issue{}))
 
-		issueList = IssueList{
+		issueList = List{
 			Issues: []Issue{issueA, issueB},
 		}
 		issueList.Remove("no-such-issue")
@@ -73,7 +73,7 @@ var _ = Describe("Issue List", func() {
 	})
 
 	It("can build hash list", func() {
-		issueList := IssueList{
+		issueList := List{
 			Issues: []Issue{issueA, issueB},
 		}
 		expectedIssueAHash := "7d75692c6fe1a268f891843f82e86df41663178c82cff160890d5cb1a108f7f0"
@@ -91,16 +91,16 @@ var _ = Describe("Issue List", func() {
 	})
 
 	It("can build outer section between two issue lists", func() {
-		issueListEmpty := IssueList{
+		issueListEmpty := List{
 			Issues: []Issue{},
 		}
-		issueListAll := IssueList{
+		issueListAll := List{
 			Issues: []Issue{issueA, issueB},
 		}
-		issueListA := IssueList{
+		issueListA := List{
 			Issues: []Issue{issueA},
 		}
-		issueListB := IssueList{
+		issueListB := List{
 			Issues: []Issue{issueB},
 		}
 		outerSection := OuterSection(issueListAll.MakeHashList(true), issueListEmpty.MakeHashList(true))

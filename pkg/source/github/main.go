@@ -96,7 +96,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 	// log.Printf("github: fetched search results for project '%s'", wData.project)
 	// Build a new list of issues from search results
-	required := issue.IssueList{
+	required := issue.List{
 		Issues: make([]issue.Issue, len(searchResults)),
 	}
 	for i, issue := range searchResults {
@@ -119,7 +119,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	if err != nil {
 		panic(err)
 	}
-	existing := issue.IssueList{
+	existing := issue.List{
 		Issues: make([]issue.Issue, len(existingIssues)),
 	}
 

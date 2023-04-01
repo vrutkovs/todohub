@@ -12,14 +12,14 @@ type Issue interface {
 	Repo() string
 }
 
-// IssueList represents a list of issues.
-type IssueList struct {
+// List represents a list of issues.
+type List struct {
 	Issues []Issue
 }
 
 var h = sha256.New()
 
-func (i *IssueList) Get(title string) (Issue, bool) {
+func (i *List) Get(title string) (Issue, bool) {
 	for _, issue := range i.Issues {
 		if issue.Title() == title {
 			return issue, true
@@ -28,7 +28,7 @@ func (i *IssueList) Get(title string) (Issue, bool) {
 	return nil, false
 }
 
-func (i *IssueList) Remove(title string) {
+func (i *List) Remove(title string) {
 	if _, ok := i.Get(title); !ok {
 		return
 	}
@@ -54,7 +54,7 @@ func asSha256(o Issue, titleOnly bool) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func (l *IssueList) MakeHashList(titleOnly bool) map[string]Issue {
+func (l *List) MakeHashList(titleOnly bool) map[string]Issue {
 	hashMap := make(map[string]Issue, len(l.Issues))
 	for _, aEl := range l.Issues {
 		hashMap[asSha256(aEl, titleOnly)] = aEl
@@ -62,8 +62,8 @@ func (l *IssueList) MakeHashList(titleOnly bool) map[string]Issue {
 	return hashMap
 }
 
-func OuterSection(hashA, hashB map[string]Issue) IssueList {
-	set := IssueList{
+func OuterSection(hashA, hashB map[string]Issue) List {
+	set := List{
 		Issues: make([]Issue, 0),
 	}
 	for hash, el := range hashA {
