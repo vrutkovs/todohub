@@ -19,23 +19,23 @@ const ParallelWorkers = 1
 
 // Client holds information about github client.
 type Client struct {
-	api       *api.Client
-	storage   *storage.Client
-	settings  *Settings
-	issueList GithubIssueList
+	api           *api.Client
+	storageClient *storage.Client
+	settings      *Settings
+	issueList     GithubIssueList
 }
 
 // New returns github client.
-func New(s *Settings, storage *storage.Client) *Client {
+func New(s *Settings, storageClient *storage.Client) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: s.Token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	return &Client{
-		api:      api.NewClient(tc),
-		storage:  storage,
-		settings: s,
+		api:           api.NewClient(tc),
+		storageClient: storageClient,
+		settings:      s,
 	}
 }
 
@@ -132,7 +132,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		}
 	}
 
-	titleOnlyComparison := (*c.storage).CompareByTitleOnly()
+	titleOnlyComparison := (*c.storageClient).CompareByTitleOnly()
 
 	// Create an intersection from these two lists
 	hashExisting := existing.MakeHashList(titleOnlyComparison)
@@ -164,7 +164,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 // Sync runs search queries and applies changes in storage.
 func (c *Client) Sync(description string) error {
 	var wg sync.WaitGroup
-	storageClient := *c.storage
+	storageClient := *c.storageClient
 
 	log.Printf("Syncing %s", description)
 	for project, query := range c.settings.SearchList {
