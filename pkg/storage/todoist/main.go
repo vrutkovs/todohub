@@ -152,7 +152,6 @@ func (c *Client) ensureLabelExists(name string) (string, error) {
 
 // CreateProject ensures section is created.
 func (c *Client) CreateProject(name string) error {
-	// c.api.FullSync(*c.context, []api.Command{})
 	_, err := c.ensureSectionExists(name)
 	return err
 }
