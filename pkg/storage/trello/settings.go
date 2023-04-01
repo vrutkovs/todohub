@@ -1,13 +1,13 @@
 package trello
 
-// Settings holds info about trello connnection
+// Settings holds info about trello connnection.
 type Settings struct {
 	AppKey  string `yaml:"appkey"`
 	Token   string `yaml:"token"`
 	BoardID string `yaml:"boardid"`
 }
 
-// Implement storage.Settings
+// Implement storage.Settings.
 func (s Settings) ID() string {
 	return "trello"
 }

@@ -5,14 +5,14 @@ import (
 	"fmt"
 )
 
-// Issue represents an issue in search query
+// Issue represents an issue in search query.
 type Issue interface {
 	Title() string
 	Url() string
 	Repo() string
 }
 
-// IssueList represents a list of issues
+// IssueList represents a list of issues.
 type IssueList struct {
 	Issues []Issue
 }

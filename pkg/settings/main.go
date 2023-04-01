@@ -10,31 +10,31 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// DefaultSyncTimeoutMinutes sets default sync period
+// DefaultSyncTimeoutMinutes sets default sync period.
 const DefaultSyncTimeoutMinutes = 5
 
-// Settings holds app-level settings
+// Settings holds app-level settings.
 type Settings struct {
 	Storage     StorageSettings `yaml:"storage"`
 	Source      SourceSettings  `yaml:"source"`
 	SyncTimeout uint64          `yaml:"sync_timeout"`
 }
 
-// StorageSettings holds storage configs
+// StorageSettings holds storage configs.
 type StorageSettings struct {
 	Trello  *trello.Settings  `yaml:"trello"`
 	Todoist *todoist.Settings `yaml:"todoist"`
 }
 
-// SourceSettings holds client configs
+// SourceSettings holds client configs.
 type SourceSettings struct {
 	Github *github.Settings `yaml:"github"`
 }
 
-// ReadFile is a function to read file and output a slice of bytes
+// ReadFile is a function to read file and output a slice of bytes.
 type ReadFile func(filename string) ([]byte, error)
 
-// LoadSettings creates Settings object from yaml
+// LoadSettings creates Settings object from yaml.
 func LoadSettings(path string, readFile ReadFile) (*Settings, error) {
 	s := Settings{
 		SyncTimeout: DefaultSyncTimeoutMinutes,

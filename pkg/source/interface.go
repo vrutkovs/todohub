@@ -5,7 +5,7 @@ import (
 	"github.com/vrutkovs/todohub/pkg/storage"
 )
 
-// Settings holds required methods for source API settings
+// Settings holds required methods for source API settings.
 type Settings interface {
 	ID() string
 	Storage() interface{}
@@ -13,7 +13,7 @@ type Settings interface {
 	Searches() map[string]string
 }
 
-// Client holds API
+// Client holds API.
 type Client interface {
 	New(*Settings, *storage.Client)
 	Sync()

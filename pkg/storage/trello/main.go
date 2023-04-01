@@ -7,14 +7,14 @@ import (
 	"github.com/vrutkovs/todohub/pkg/issue"
 )
 
-// Client is a wrapper for trello client
+// Client is a wrapper for trello client.
 type Client struct {
 	api      *api.Client
 	board    *api.Board
 	settings *Settings
 }
 
-// Card struct holds information about the card
+// Card struct holds information about the card.
 type Card struct {
 	id    string
 	title string
@@ -35,7 +35,7 @@ func (c Card) Repo() string {
 	return ""
 }
 
-// New returns trello client
+// New returns trello client.
 func New(s *Settings) (*Client, error) {
 	clientApi := api.NewClient(s.AppKey, s.Token)
 	board, err := clientApi.GetBoard(s.BoardID, api.Defaults())
@@ -49,7 +49,7 @@ func New(s *Settings) (*Client, error) {
 	}, nil
 }
 
-// ensureListExists returns list ID if list with this name exists
+// ensureListExists returns list ID if list with this name exists.
 func (c *Client) ensureListExists(name string) (string, error) {
 	lists, err := c.board.GetLists(api.Defaults())
 	if err != nil {
@@ -88,7 +88,7 @@ func apiCardToCard(apiCard *api.Card) Card {
 	}
 }
 
-// FetchCardsInList returns a map of cards
+// FetchCardsInList returns a map of cards.
 func (c *Client) fetchCardsInList(listID string) ([]Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
@@ -141,7 +141,7 @@ func (c *Client) Create(listName string, item issue.Issue) error {
 	return c.attachLink(card, item.Url())
 }
 
-// AddItemToList adds a text card to the list and return a pointer to Card
+// AddItemToList adds a text card to the list and return a pointer to Card.
 func (c *Client) addItemToList(item string, listID string) (*Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
@@ -177,7 +177,7 @@ func (c *Client) addItemToList(item string, listID string) (*Card, error) {
 	}, nil
 }
 
-// AttachLink adds a URL as attachment to the card
+// AttachLink adds a URL as attachment to the card.
 func (c *Client) attachLink(card *Card, url string) error {
 	apiCard, err := c.api.GetCard(card.id, api.Arguments{"attachments": "true"})
 	if err != nil {
@@ -197,7 +197,7 @@ func (c *Client) attachLink(card *Card, url string) error {
 	return nil
 }
 
-// CloseCard marks card as closed and removes it
+// CloseCard marks card as closed and removes it.
 func (c *Client) Delete(listName string, item issue.Issue) error {
 	// Lookup card by title in the list
 	listID, err := c.ensureListExists(listName)
@@ -232,14 +232,14 @@ func (c *Client) Delete(listName string, item issue.Issue) error {
 	return err
 }
 
-// Sync ensures changes are commited
+// Sync ensures changes are committed.
 func (c *Client) Sync(_ string) error {
 	// trello changes are auto-synced
 	return nil
 }
 
 // CompareByTitleOnly returns true if issues should be compared by title only
-// Some storages may not be able to fetch other details like URL in GetIssues
+// Some storages may not be able to fetch other details like URL in GetIssues.
 func (s *Client) CompareByTitleOnly() bool {
 	return true
 }

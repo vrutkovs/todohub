@@ -2,13 +2,13 @@ package storage
 
 import "github.com/vrutkovs/todohub/pkg/issue"
 
-// Settings holds required methods for source API settings
+// Settings holds required methods for source API settings.
 type Settings interface {
 	ID() string
 	Project() string
 }
 
-// Client holds API
+// Client holds API.
 type Client interface {
 	CompareByTitleOnly() bool
 	CreateProject(string) error

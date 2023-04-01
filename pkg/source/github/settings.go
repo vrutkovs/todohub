@@ -1,6 +1,6 @@
 package github
 
-// Settings stores info about github connection
+// Settings stores info about github connection.
 type Settings struct {
 	Token        string            `yaml:"token"`
 	BoardID      string            `yaml:"project,omitempty"`
@@ -8,7 +8,7 @@ type Settings struct {
 	SearchList   map[string]string `yaml:"lists"`
 }
 
-// Implement source.Settings
+// Implement source.Settings.
 func (s Settings) ID() string {
 	return "github"
 }

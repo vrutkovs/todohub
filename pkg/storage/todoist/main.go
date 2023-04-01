@@ -11,7 +11,7 @@ import (
 	"github.com/vrutkovs/todohub/pkg/issue"
 )
 
-// Client is a wrapper for trello client
+// Client is a wrapper for trello client.
 type Client struct {
 	api      *api.Client
 	project  *api.Project
@@ -19,7 +19,7 @@ type Client struct {
 	context  *context.Context
 }
 
-// Item struct holds information about the card
+// Item struct holds information about the card.
 type Item struct {
 	id   api.ID
 	text string
@@ -36,7 +36,7 @@ func (c Item) match() []string {
 	return m[0]
 }
 
-// Title extracts link title from task contents
+// Title extracts link title from task contents.
 func (c Item) Title() string {
 	matches := c.match()
 	if matches == nil || len(matches) < 3 {
@@ -45,7 +45,7 @@ func (c Item) Title() string {
 	return matches[1]
 }
 
-// Url extracts link title from task contents
+// Url extracts link title from task contents.
 func (c Item) Url() string {
 	matches := c.match()
 	if matches == nil || len(matches) < 3 {
@@ -54,12 +54,12 @@ func (c Item) Url() string {
 	return matches[2]
 }
 
-// Repo extracts valid tags
+// Repo extracts valid tags.
 func (c Item) Repo() string {
 	return c.repo
 }
 
-// New returns todoist client
+// New returns todoist client.
 func New(s *Settings) (*Client, error) {
 	clientAPI, err := api.NewClient("", s.Token, "*", "", nil)
 	if err != nil {
@@ -100,7 +100,7 @@ func New(s *Settings) (*Client, error) {
 	}, nil
 }
 
-// ensureSectionExists returns list ID if list with this name exists
+// ensureSectionExists returns list ID if list with this name exists.
 func (c *Client) ensureSectionExists(name string) (api.ID, error) {
 	section := c.api.Section.FindOneByName(name)
 	if section != nil {
@@ -123,7 +123,7 @@ func (c *Client) ensureSectionExists(name string) (api.ID, error) {
 	return section.ID, nil
 }
 
-// ensureLabelExists returns label ID if label with this name exists
+// ensureLabelExists returns label ID if label with this name exists.
 func (c *Client) ensureLabelExists(name string) (string, error) {
 	log.Printf("Looking up label %s", name)
 	label := c.api.Label.FindOneByName(name)
@@ -150,7 +150,7 @@ func (c *Client) ensureLabelExists(name string) (string, error) {
 	return label.ID, nil
 }
 
-// CreateProject ensures section is created
+// CreateProject ensures section is created.
 func (c *Client) CreateProject(name string) error {
 	// c.api.FullSync(*c.context, []api.Command{})
 	_, err := c.ensureSectionExists(name)
@@ -174,13 +174,12 @@ func (c *Client) apiItemToItem(apiItem *api.Item) Item {
 	}
 }
 
-// fetchItemsInSection returns a map of cards
+// fetchItemsInSection returns a map of cards.
 func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 	result := make([]Item, 0)
 	allProjectItems := c.api.Item.FindByProjectIDs([]api.ID{c.project.ID})
 
 	for _, item := range allProjectItems {
-
 		if item.SectionID == sectionID {
 			result = append(result, c.apiItemToItem(&item))
 		}
@@ -223,7 +222,7 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 	return c.addItemToSection(markDownTitle, sectionID, labelID)
 }
 
-// addItemToSection adds a text card to the list and return a pointer to Card
+// addItemToSection adds a text card to the list and return a pointer to Card.
 func (c *Client) addItemToSection(text string, sectionID api.ID, labelID string) error {
 	item, err := api.NewItem(text, &api.NewItemOpts{
 		ProjectID: c.project.ID,
@@ -240,7 +239,7 @@ func (c *Client) addItemToSection(text string, sectionID api.ID, labelID string)
 	return nil
 }
 
-// CloseCard marks card as closed and removes it
+// CloseCard marks card as closed and removes it.
 func (c *Client) Delete(sectionName string, item issue.Issue) error {
 	// Lookup item by title in the section
 	sectionID, err := c.ensureSectionExists(sectionName)
@@ -279,7 +278,7 @@ func (c *Client) Sync(description string) error {
 }
 
 // CompareByTitleOnly returns true if issues should be compared by title only
-// Some storages may not be able to fetch other details like URL in GetIssues
+// Some storages may not be able to fetch other details like URL in GetIssues.
 func (s *Client) CompareByTitleOnly() bool {
 	return true
 }

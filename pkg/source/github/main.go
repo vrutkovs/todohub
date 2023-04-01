@@ -14,10 +14,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// ParallelWorkers is a number of worker threads run in parallel
+// ParallelWorkers is a number of worker threads run in parallel.
 const ParallelWorkers = 1
 
-// Client holds information about github client
+// Client holds information about github client.
 type Client struct {
 	api       *api.Client
 	storage   *storage.Client
@@ -25,7 +25,7 @@ type Client struct {
 	issueList GithubIssueList
 }
 
-// New returns github client
+// New returns github client.
 func New(s *Settings, storage *storage.Client) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -39,7 +39,7 @@ func New(s *Settings, storage *storage.Client) *Client {
 	}
 }
 
-// GithubIssue implements source.Issue
+// GithubIssue implements source.Issue.
 type GithubIssue struct {
 	title string
 	url   string
@@ -58,7 +58,7 @@ func (i GithubIssue) Repo() string {
 	return i.repo
 }
 
-// GithubIssueList implements source.IssueList
+// GithubIssueList implements source.IssueList.
 type GithubIssueList struct {
 	issues map[string][]GithubIssue
 }
@@ -74,14 +74,14 @@ func (s Client) Issues() GithubIssueList {
 	return s.issueList
 }
 
-// WorkerData holds info about worker payload
+// WorkerData holds info about worker payload.
 type WorkerData struct {
 	project string
 	query   string
 	storage storage.Client
 }
 
-// githubWorker runs queries in github
+// githubWorker runs queries in github.
 func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -161,7 +161,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 }
 
-// Sync runs search queries and applies changes in storage
+// Sync runs search queries and applies changes in storage.
 func (c *Client) Sync(description string) error {
 	var wg sync.WaitGroup
 	storageClient := *c.storage
@@ -183,7 +183,7 @@ func (c *Client) Sync(description string) error {
 
 }
 
-// getIssueInfoForSearchQuery runs the query and returns a list of issues
+// getIssueInfoForSearchQuery runs the query and returns a list of issues.
 func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, error) {
 	ctx := context.Background()
 	opts := &api.SearchOptions{Sort: "created", Order: "asc"}
@@ -211,7 +211,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, 
 	return results, err
 }
 
-// Check if github error is fatal
+// Check if github error is fatal.
 func isCritical(err error) bool {
 	if _, ok := err.(*api.RateLimitError); ok {
 		log.Println("hit rate limit")
@@ -220,7 +220,7 @@ func isCritical(err error) bool {
 	return true
 }
 
-// Build repo slug from Repository
+// Build repo slug from Repository.
 func repoSlug(repoUrl string) string {
 	splitString := strings.Split(repoUrl, "/")
 	if len(splitString) < 4 {
