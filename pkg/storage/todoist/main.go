@@ -174,7 +174,7 @@ func (c *Client) apiItemToItem(apiItem *api.Item) Item {
 }
 
 // fetchItemsInSection returns a map of cards.
-func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
+func (c *Client) fetchItemsInSection(sectionID api.ID) []Item {
 	result := make([]Item, 0)
 	allProjectItems := c.api.Item.FindByProjectIDs([]api.ID{c.project.ID})
 
@@ -183,7 +183,7 @@ func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 			result = append(result, c.apiItemToItem(&allProjectItems[i]))
 		}
 	}
-	return result, nil
+	return result
 }
 
 func (c *Client) GetIssues(sectionName string) ([]issue.Issue, error) {
@@ -192,10 +192,7 @@ func (c *Client) GetIssues(sectionName string) ([]issue.Issue, error) {
 	if err != nil {
 		return issues, err
 	}
-	items, err := c.fetchItemsInSection(sectionID)
-	if err != nil {
-		return issues, err
-	}
+	items := c.fetchItemsInSection(sectionID)
 	// Convert Items back to Issue
 	issues = make([]issue.Issue, 0)
 	for _, item := range items {
@@ -245,10 +242,7 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
-	cardList, err := c.fetchItemsInSection(sectionID)
-	if err != nil {
-		return err
-	}
+	cardList := c.fetchItemsInSection(sectionID)
 	for _, i := range cardList {
 		if i.Title() == item.Title() {
 			err := c.api.Item.Close(i.id)
