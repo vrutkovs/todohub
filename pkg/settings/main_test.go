@@ -125,7 +125,7 @@ var (
 	todoistSettings = todoist.Settings{
 		Token: "todoist",
 	}
-	trello401Error = trelloError{msg: "HTTP request failure on https://api.trello.com/1/boards/trello:\n401: invalid key", code: 401}
+	errTrello401 = trelloError{msg: "HTTP request failure on https://api.trello.com/1/boards/trello:\n401: invalid key", code: 401}
 )
 
 var _ = DescribeTable("GetActiveStorageClient",
@@ -136,12 +136,12 @@ var _ = DescribeTable("GetActiveStorageClient",
 	Entry("Empty", StorageSettings{}, fmt.Errorf("no valid storage settings found")),
 	Entry("Trello", StorageSettings{
 		Trello: &trelloSettings,
-	}, trello401Error),
+	}, errTrello401),
 	Entry("Todoist", StorageSettings{
 		Todoist: &todoistSettings,
 	}, errors.New("failed to sync, status code: 403, command: []")),
 	Entry("Both", StorageSettings{
 		Trello:  &trelloSettings,
 		Todoist: &todoistSettings,
-	}, trello401Error),
+	}, errTrello401),
 )
