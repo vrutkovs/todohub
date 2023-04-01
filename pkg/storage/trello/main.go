@@ -142,7 +142,7 @@ func (c *Client) Create(listName string, item issue.Issue) error {
 }
 
 // AddItemToList adds a text card to the list and return a pointer to Card.
-func (c *Client) addItemToList(item string, listID string) (*Card, error) {
+func (c *Client) addItemToList(item, listID string) (*Card, error) {
 	list, err := c.api.GetList(listID, api.Defaults())
 	if err != nil {
 		return nil, err
