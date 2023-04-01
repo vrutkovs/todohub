@@ -208,24 +208,24 @@ func (c *Client) Delete(listName string, item issue.Issue) error {
 		return err
 	}
 	for _, i := range cardList {
-		if i.Title() == item.Title() {
-			// Mark card as closed
-			card, err := c.api.GetCard(i.id, api.Defaults())
-			if err != nil {
-				return err
-			}
-			if card.Closed {
-				return nil
-			}
-			err = card.Archive()
-			if err != nil {
-				return err
-			}
-			err = card.Delete()
-			if err != nil {
-				return err
-			}
-			break
+		if i.Title() != item.Title() {
+			continue
+		}
+		// Mark card as closed
+		card, err := c.api.GetCard(i.id, api.Defaults())
+		if err != nil {
+			return err
+		}
+		if card.Closed {
+			return nil
+		}
+		err = card.Archive()
+		if err != nil {
+			return err
+		}
+		err = card.Delete()
+		if err != nil {
+			return err
 		}
 	}
 	return err
