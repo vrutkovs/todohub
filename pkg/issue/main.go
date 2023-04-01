@@ -46,7 +46,7 @@ func asSha256(o Issue, titleOnly bool) string {
 	defer h.Reset()
 	var obj string
 	if titleOnly {
-		obj = fmt.Sprintf("%v", o.Title())
+		obj = o.Title()
 	} else {
 		obj = fmt.Sprintf("%v", o)
 	}
