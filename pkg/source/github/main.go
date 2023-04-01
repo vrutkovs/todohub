@@ -26,7 +26,7 @@ type Client struct {
 }
 
 // New returns github client.
-func New(s *Settings, storageClient *storage.Client) *Client {
+func New(s *Settings, storageClient storage.Client) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: s.Token},
@@ -34,7 +34,7 @@ func New(s *Settings, storageClient *storage.Client) *Client {
 	tc := oauth2.NewClient(ctx, ts)
 	return &Client{
 		api:           api.NewClient(tc),
-		storageClient: storageClient,
+		storageClient: &storageClient,
 		settings:      s,
 	}
 }

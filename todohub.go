@@ -22,7 +22,7 @@ func main() {
 	}
 
 	if s.Source.Github != nil {
-		gh := github.New(s.Source.Github, &storageClient)
+		gh := github.New(s.Source.Github, storageClient)
 		if err := gocron.Every(s.SyncTimeout).Minutes().Do(gh.Sync, "periodically"); err != nil {
 			panic(err)
 		}
