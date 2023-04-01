@@ -45,7 +45,7 @@ func LoadSettings(path string, readFile ReadFile) (*Settings, error) {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal([]byte(data), &s)
+	err = yaml.Unmarshal(data, &s)
 	if err != nil {
 		return nil, err
 	}
