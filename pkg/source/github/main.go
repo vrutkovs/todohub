@@ -22,7 +22,7 @@ type Client struct {
 	api           *api.Client
 	storageClient *storage.Client
 	settings      *Settings
-	issueList     GithubIssueList
+	issueList     IssueList
 }
 
 // New returns github client.
@@ -39,38 +39,38 @@ func New(s *Settings, storageClient storage.Client) *Client {
 	}
 }
 
-// GithubIssue implements source.Issue.
-type GithubIssue struct {
+// Issue implements source.Issue.
+type Issue struct {
 	title string
 	url   string
 	repo  string
 }
 
-func (i GithubIssue) Title() string {
+func (i Issue) Title() string {
 	return i.title
 }
 
-func (i GithubIssue) URL() string {
+func (i Issue) URL() string {
 	return i.url
 }
 
-func (i GithubIssue) Repo() string {
+func (i Issue) Repo() string {
 	return i.repo
 }
 
-// GithubIssueList implements source.IssueList.
-type GithubIssueList struct {
-	issues map[string][]GithubIssue
+// IssueList implements source.IssueList.
+type IssueList struct {
+	issues map[string][]Issue
 }
 
-func (i GithubIssueList) Name(name string) []GithubIssue {
+func (i IssueList) Name(name string) []Issue {
 	if list, ok := i.issues[name]; ok {
 		return list
 	}
 	return nil
 }
 
-func (c Client) Issues() GithubIssueList {
+func (c Client) Issues() IssueList {
 	return c.issueList
 }
 
@@ -100,7 +100,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 		Issues: make([]issue.Issue, len(searchResults)),
 	}
 	for i, issue := range searchResults {
-		required.Issues[i] = GithubIssue{
+		required.Issues[i] = Issue{
 			title: issue.title,
 			url:   issue.url,
 			repo:  issue.repo,
@@ -125,7 +125,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	// Drop internal values to make intersection work
 	for i, issue := range existingIssues {
-		existing.Issues[i] = GithubIssue{
+		existing.Issues[i] = Issue{
 			title: issue.Title(),
 			url:   issue.URL(),
 			repo:  issue.Repo(),
@@ -183,10 +183,10 @@ func (c *Client) Sync(description string) error {
 }
 
 // getIssueInfoForSearchQuery runs the query and returns a list of issues.
-func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, error) {
+func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error) {
 	ctx := context.Background()
 	opts := &api.SearchOptions{Sort: "created", Order: "asc"}
-	results := make([]GithubIssue, 0)
+	results := make([]Issue, 0)
 	err := retry.Do(
 		func() error {
 			result, _, err := c.api.Search.Issues(ctx, searchQuery, opts)
@@ -194,7 +194,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]GithubIssue, 
 				return err
 			}
 			for _, issue := range result.Issues {
-				ii := GithubIssue{
+				ii := Issue{
 					title: issue.GetTitle(),
 					url:   issue.GetHTMLURL(),
 					repo:  repoSlug(issue.GetRepositoryURL()),
