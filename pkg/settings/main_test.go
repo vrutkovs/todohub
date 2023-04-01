@@ -26,14 +26,14 @@ type FakeReadFiler struct {
 	Str string
 }
 
-func (f FakeReadFiler) fakeReadFile(filename string) ([]byte, error) {
+func (f FakeReadFiler) fakeReadFile(_ string) ([]byte, error) {
 	buf := bytes.NewBufferString(f.Str)
 	return ioutil.ReadAll(buf)
 }
 
 var errFileRead = errors.New("no such file")
 
-func (f FakeReadFiler) fakeReadFileThrowsError(filename string) ([]byte, error) {
+func (f FakeReadFiler) fakeReadFileThrowsError(_ string) ([]byte, error) {
 	return []byte{}, errFileRead
 }
 
