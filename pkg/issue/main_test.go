@@ -116,5 +116,4 @@ var _ = Describe("Issue List", func() {
 		outerSection = OuterSection(issueListAll.MakeHashList(true), issueListB.MakeHashList(true))
 		Expect(outerSection).Should(Equal(issueListA))
 	})
-
 })

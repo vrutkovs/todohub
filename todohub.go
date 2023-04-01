@@ -33,5 +33,4 @@ func main() {
 
 	// Start cron
 	<-gocron.Start()
-
 }

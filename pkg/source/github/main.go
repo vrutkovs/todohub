@@ -180,7 +180,6 @@ func (c *Client) Sync(description string) error {
 	wg.Wait()
 	log.Println("github update completed")
 	return nil
-
 }
 
 // getIssueInfoForSearchQuery runs the query and returns a list of issues.

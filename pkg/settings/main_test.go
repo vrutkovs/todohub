@@ -86,7 +86,6 @@ var _ = DescribeTable("LoadSettings",
 )
 
 var _ = Describe("LoadSettings: errors", func() {
-
 	It("wraps read error", func() {
 		data, err := mockSettings(Settings{})
 		Expect(err).NotTo(HaveOccurred())
