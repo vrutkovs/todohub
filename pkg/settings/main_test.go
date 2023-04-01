@@ -5,14 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"testing"
 
 	"gopkg.in/yaml.v2"
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage/todoist"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
-
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
