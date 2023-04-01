@@ -1,6 +1,6 @@
 package jira
 
-type JiraSettings struct {
+type Settings struct {
 	Endpoint string `yaml:"endpoint"`
 	Token    string `yaml:"token"`
 }
