@@ -178,9 +178,9 @@ func (c *Client) fetchItemsInSection(sectionID api.ID) ([]Item, error) {
 	result := make([]Item, 0)
 	allProjectItems := c.api.Item.FindByProjectIDs([]api.ID{c.project.ID})
 
-	for _, item := range allProjectItems {
+	for i, item := range allProjectItems {
 		if item.SectionID == sectionID {
-			result = append(result, c.apiItemToItem(&item))
+			result = append(result, c.apiItemToItem(&allProjectItems[i]))
 		}
 	}
 	return result, nil
