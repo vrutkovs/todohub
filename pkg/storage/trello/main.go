@@ -37,13 +37,13 @@ func (c Card) Repo() string {
 
 // New returns trello client.
 func New(s *Settings) (*Client, error) {
-	clientApi := api.NewClient(s.AppKey, s.Token)
-	board, err := clientApi.GetBoard(s.BoardID, api.Defaults())
+	clientAPI := api.NewClient(s.AppKey, s.Token)
+	board, err := clientAPI.GetBoard(s.BoardID, api.Defaults())
 	if err != nil {
 		return nil, err
 	}
 	return &Client{
-		api:      clientApi,
+		api:      clientAPI,
 		board:    board,
 		settings: s,
 	}, nil
