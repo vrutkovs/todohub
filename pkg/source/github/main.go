@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -212,7 +213,8 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error)
 
 // Check if github error is fatal.
 func isCritical(err error) bool {
-	if _, ok := err.(*api.RateLimitError); ok {
+	var errRateLimit *api.RateLimitError
+	if errors.As(err, &errRateLimit) {
 		log.Println("hit rate limit")
 		return false
 	}
