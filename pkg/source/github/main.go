@@ -70,8 +70,8 @@ func (i GithubIssueList) Name(name string) []GithubIssue {
 	return nil
 }
 
-func (s Client) Issues() GithubIssueList {
-	return s.issueList
+func (c Client) Issues() GithubIssueList {
+	return c.issueList
 }
 
 // WorkerData holds info about worker payload.
