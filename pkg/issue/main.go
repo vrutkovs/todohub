@@ -19,8 +19,8 @@ type List struct {
 
 var h = sha256.New()
 
-func (i *List) Get(title string) (Issue, bool) {
-	for _, issue := range i.Issues {
+func (l *List) Get(title string) (Issue, bool) {
+	for _, issue := range l.Issues {
 		if issue.Title() == title {
 			return issue, true
 		}
@@ -28,27 +28,27 @@ func (i *List) Get(title string) (Issue, bool) {
 	return nil, false
 }
 
-func (i *List) Remove(title string) {
-	if _, ok := i.Get(title); !ok {
+func (l *List) Remove(title string) {
+	if _, ok := l.Get(title); !ok {
 		return
 	}
 	newList := make([]Issue, 0)
-	for _, issue := range i.Issues {
+	for _, issue := range l.Issues {
 		if issue.Title() == title {
 			continue
 		}
 		newList = append(newList, issue)
 	}
-	i.Issues = newList
+	l.Issues = newList
 }
 
-func asSha256(o Issue, titleOnly bool) string {
+func asSha256(l Issue, titleOnly bool) string {
 	defer h.Reset()
 	var obj string
 	if titleOnly {
-		obj = o.Title()
+		obj = l.Title()
 	} else {
-		obj = fmt.Sprintf("%v", o)
+		obj = fmt.Sprintf("%v", l)
 	}
 	h.Write([]byte(obj))
 	return fmt.Sprintf("%x", h.Sum(nil))
