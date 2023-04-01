@@ -174,7 +174,7 @@ func (c *Client) Sync(description string) error {
 			storage: storageClient,
 		}
 		wg.Add(1)
-		//go c.githubWorker(workerData, &wg)
+
 		c.githubWorker(workerData, &wg)
 	}
 	wg.Wait()
