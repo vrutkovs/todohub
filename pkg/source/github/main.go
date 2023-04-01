@@ -50,7 +50,7 @@ func (i GithubIssue) Title() string {
 	return i.title
 }
 
-func (i GithubIssue) Url() string {
+func (i GithubIssue) URL() string {
 	return i.url
 }
 
@@ -127,7 +127,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	for i, issue := range existingIssues {
 		existing.Issues[i] = GithubIssue{
 			title: issue.Title(),
-			url:   issue.Url(),
+			url:   issue.URL(),
 			repo:  issue.Repo(),
 		}
 	}
@@ -220,8 +220,8 @@ func isCritical(err error) bool {
 }
 
 // Build repo slug from Repository.
-func repoSlug(repoUrl string) string {
-	splitString := strings.Split(repoUrl, "/")
+func repoSlug(repoURL string) string {
+	splitString := strings.Split(repoURL, "/")
 	if len(splitString) < 4 {
 		return ""
 	}

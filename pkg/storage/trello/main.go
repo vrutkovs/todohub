@@ -25,7 +25,7 @@ func (c Card) Title() string {
 	return c.title
 }
 
-func (c Card) Url() string {
+func (c Card) URL() string {
 	// TODO: Fetch first attached URL
 	return c.url
 }
@@ -138,7 +138,7 @@ func (c *Client) Create(listName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
-	return c.attachLink(card, item.Url())
+	return c.attachLink(card, item.URL())
 }
 
 // AddItemToList adds a text card to the list and return a pointer to Card.

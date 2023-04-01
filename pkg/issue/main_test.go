@@ -22,7 +22,7 @@ func (i IssueMock) Title() string {
 	return i.title
 }
 
-func (i IssueMock) Url() string {
+func (i IssueMock) URL() string {
 	return i.url
 }
 

@@ -45,8 +45,8 @@ func (c Item) Title() string {
 	return matches[1]
 }
 
-// Url extracts link title from task contents.
-func (c Item) Url() string {
+// URL extracts link title from task contents.
+func (c Item) URL() string {
 	matches := c.match()
 	if matches == nil || len(matches) < 3 {
 		return ""
@@ -218,7 +218,7 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
-	markDownTitle := buildMarkdownLink(item.Title(), item.Url())
+	markDownTitle := buildMarkdownLink(item.Title(), item.URL())
 	return c.addItemToSection(markDownTitle, sectionID, labelID)
 }
 

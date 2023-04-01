@@ -8,7 +8,7 @@ import (
 // Issue represents an issue in search query.
 type Issue interface {
 	Title() string
-	Url() string
+	URL() string
 	Repo() string
 }
 
