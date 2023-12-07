@@ -129,7 +129,7 @@ func (c *Client) ensureLabelExists(name string) (string, error) {
 	label := c.api.Label.FindOneByName(name)
 	if label != nil {
 		log.Printf("Found label %#v", label)
-		return label.ID, nil
+		return label.Name, nil
 	}
 	// Label was not found, needs to be created
 	log.Printf("Creating label %s", name)
@@ -147,7 +147,7 @@ func (c *Client) ensureLabelExists(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return label.ID, nil
+	return label.Name, nil
 }
 
 // CreateProject ensures section is created.
@@ -210,20 +210,20 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
-	labelID, err := c.ensureLabelExists(item.Repo())
+	labelName, err := c.ensureLabelExists(item.Repo())
 	if err != nil {
 		return err
 	}
 	markDownTitle := buildMarkdownLink(item.Title(), item.URL())
-	return c.addItemToSection(markDownTitle, sectionID, labelID)
+	return c.addItemToSection(markDownTitle, sectionID, labelName)
 }
 
 // addItemToSection adds a text card to the list and return a pointer to Card.
-func (c *Client) addItemToSection(text string, sectionID api.ID, labelID string) error {
+func (c *Client) addItemToSection(text string, sectionID api.ID, labelName string) error {
 	item, err := api.NewItem(text, &api.NewItemOpts{
 		ProjectID: c.project.ID,
 		SectionID: sectionID,
-		Labels:    []string{labelID},
+		Labels:    []string{labelName},
 	})
 	if err != nil {
 		return err
