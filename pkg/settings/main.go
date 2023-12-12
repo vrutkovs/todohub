@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vrutkovs/todohub/pkg/source/github"
+	"github.com/vrutkovs/todohub/pkg/source/jira"
 	"github.com/vrutkovs/todohub/pkg/storage"
 	"github.com/vrutkovs/todohub/pkg/storage/todoist"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
@@ -29,6 +30,7 @@ type StorageSettings struct {
 // SourceSettings holds client configs.
 type SourceSettings struct {
 	Github *github.Settings `yaml:"github"`
+	Jira   *jira.Settings   `yaml:"jira"`
 }
 
 // ReadFile is a function to read file and output a slice of bytes.

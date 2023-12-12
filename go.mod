@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/adlio/trello v1.10.0
+	github.com/andygrunwald/go-jira/v2 v2.0.0-20231114185916-57d1e28f1bb7
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/google/go-github/v28 v28.1.1
 	github.com/jasonlvhit/gocron v0.0.1

@@ -6,6 +6,7 @@ import (
 	"github.com/jasonlvhit/gocron"
 	"github.com/vrutkovs/todohub/pkg/settings"
 	"github.com/vrutkovs/todohub/pkg/source/github"
+	"github.com/vrutkovs/todohub/pkg/source/jira"
 )
 
 func main() {
@@ -27,6 +28,19 @@ func main() {
 			panic(err)
 		}
 		if err := gh.Sync("on startup"); err != nil {
+			panic(err)
+		}
+	}
+
+	if s.Source.Jira != nil {
+		jiraSource, err := jira.New(s.Source.Jira, storageClient)
+		if err != nil {
+			panic(err)
+		}
+		if err := gocron.Every(s.SyncTimeout).Minutes().Do(jiraSource.Sync, "periodically"); err != nil {
+			panic(err)
+		}
+		if err := jiraSource.Sync("on startup"); err != nil {
 			panic(err)
 		}
 	}
