@@ -39,7 +39,7 @@ func (c Item) match() []string {
 // Title extracts link title from task contents.
 func (c Item) Title() string {
 	matches := c.match()
-	if matches == nil || len(matches) < 3 {
+	if len(matches) < 3 {
 		return ""
 	}
 	return matches[1]
@@ -48,7 +48,7 @@ func (c Item) Title() string {
 // URL extracts link title from task contents.
 func (c Item) URL() string {
 	matches := c.match()
-	if matches == nil || len(matches) < 3 {
+	if len(matches) < 3 {
 		return ""
 	}
 	return matches[2]

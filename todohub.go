@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/jasonlvhit/gocron"
 	"github.com/vrutkovs/todohub/pkg/settings"
@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Parse settings file
-	s, err := settings.LoadSettings("configs/todohub.yaml", ioutil.ReadFile)
+	s, err := settings.LoadSettings("configs/todohub.yaml", os.ReadFile)
 	if err != nil {
 		panic(err)
 	}

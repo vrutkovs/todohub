@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"gopkg.in/yaml.v2"
@@ -28,7 +28,7 @@ type FakeReadFiler struct {
 
 func (f FakeReadFiler) fakeReadFile(_ string) ([]byte, error) {
 	buf := bytes.NewBufferString(f.Str)
-	return ioutil.ReadAll(buf)
+	return io.ReadAll(buf)
 }
 
 var errFileRead = errors.New("no such file")

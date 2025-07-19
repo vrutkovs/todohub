@@ -88,7 +88,7 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 
 	// Run the query
 	query := wData.query
-	if len(c.settings.SearchPrefix) > 0 {
+	if c.settings.SearchPrefix != "" {
 		query = fmt.Sprintf("%s %s", c.settings.SearchPrefix, wData.query)
 	}
 	searchResults, err := c.getIssueInfoForSearchQuery(query)
