@@ -208,6 +208,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error)
 			return !isCritical(err)
 		}),
 	)
+	log.Printf("Fetching items for query %s: found %d", searchQuery, len(results))
 	return results, err
 }
 

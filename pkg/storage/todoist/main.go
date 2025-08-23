@@ -198,6 +198,7 @@ func (c *Client) GetIssues(sectionName string) ([]issue.Issue, error) {
 	for _, item := range items {
 		issues = append(issues, item)
 	}
+	log.Printf("Fetching items for section %s: found %d", sectionName, len(items))
 	return issues, nil
 }
 
@@ -215,11 +216,13 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 		return err
 	}
 	markDownTitle := buildMarkdownLink(item.Title(), item.URL())
-	return c.addItemToSection(markDownTitle, sectionID, labelName)
+	return c.addItemToSection(markDownTitle, sectionID, sectionName, labelName)
 }
 
 // addItemToSection adds a text card to the list and return a pointer to Card.
-func (c *Client) addItemToSection(text string, sectionID api.ID, labelName string) error {
+func (c *Client) addItemToSection(text string, sectionID api.ID, sectionName string, labelName string) error {
+	log.Printf("Adding item %s to section %s", text, sectionName)
+
 	item, err := api.NewItem(text, &api.NewItemOpts{
 		ProjectID: c.project.ID,
 		SectionID: sectionID,
@@ -237,6 +240,8 @@ func (c *Client) addItemToSection(text string, sectionID api.ID, labelName strin
 
 // CloseCard marks card as closed and removes it.
 func (c *Client) Delete(sectionName string, item issue.Issue) error {
+	log.Printf("Deleteing %s from section %s", item.Title(), sectionName)
+
 	// Lookup item by title in the section
 	sectionID, err := c.ensureSectionExists(sectionName)
 	if err != nil {
