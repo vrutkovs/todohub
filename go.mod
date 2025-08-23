@@ -11,6 +11,7 @@ require (
 	github.com/kobtea/go-todoist v0.2.2
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
+	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/oauth2 v0.27.0
 	gopkg.in/yaml.v2 v2.4.0
 )

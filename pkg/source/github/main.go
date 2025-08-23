@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 
 	"github.com/avast/retry-go"
 	api "github.com/google/go-github/v28/github"
+	"github.com/sirupsen/logrus"
 	"github.com/vrutkovs/todohub/pkg/issue"
 	"github.com/vrutkovs/todohub/pkg/storage"
 	"golang.org/x/oauth2"
@@ -24,10 +24,11 @@ type Client struct {
 	storageClient *storage.Client
 	settings      *Settings
 	issueList     IssueList
+	logger        *logrus.Logger
 }
 
 // New returns github client.
-func New(s *Settings, storageClient storage.Client) *Client {
+func New(s *Settings, storageClient storage.Client, logger *logrus.Logger) *Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: s.Token},
@@ -37,6 +38,7 @@ func New(s *Settings, storageClient storage.Client) *Client {
 		api:           api.NewClient(tc),
 		storageClient: &storageClient,
 		settings:      s,
+		logger:        logger,
 	}
 }
 
@@ -84,6 +86,7 @@ type WorkerData struct {
 
 // githubWorker runs queries in github.
 func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
+	logger := c.logger.WithFields(logrus.Fields{"source": "github", "project": wData.project})
 	defer wg.Done()
 
 	// Run the query
@@ -93,9 +96,9 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 	searchResults, err := c.getIssueInfoForSearchQuery(query)
 	if err != nil {
-		panic(err)
+		c.logger.Fatal(err)
 	}
-	// log.Printf("github: fetched search results for project '%s'", wData.project)
+	logger.Info("fetched search results")
 	// Build a new list of issues from search results
 	required := issue.List{
 		Issues: make([]issue.Issue, len(searchResults)),
@@ -109,16 +112,16 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 
 	// Create a list if its missing
-	// log.Println("github: fetching existing cards")
+	logger.Info("fetching existing cards")
 	err = wData.storage.CreateProject(wData.project)
 	if err != nil {
-		panic(err)
+		c.logger.Fatal(err)
 	}
 
 	// Fetch existing cards and mark all cards for removal
 	existingIssues, err := wData.storage.GetIssues(wData.project)
 	if err != nil {
-		panic(err)
+		c.logger.Fatal(err)
 	}
 	existing := issue.List{
 		Issues: make([]issue.Issue, len(existingIssues)),
@@ -139,27 +142,28 @@ func (c *Client) githubWorker(wData WorkerData, wg *sync.WaitGroup) {
 	hashExisting := existing.MakeHashList(titleOnlyComparison)
 	hashRequired := required.MakeHashList(titleOnlyComparison)
 	// Remove all cards in existing which are not in intersection
-	// log.Println("github: removing old cards")
+	logger.Info("removing old cards")
 	for _, el := range issue.OuterSection(hashExisting, hashRequired).Issues {
 		err := wData.storage.Delete(wData.project, el)
 		if err != nil {
-			panic(err)
+			c.logger.Fatal(err)
 		}
-		log.Printf("github: removed item %s", el.Title())
+		logger.WithFields(logrus.Fields{"item": el.Title()}).Info("removing old card")
 	}
 
 	// Add all cards from required which are not in intersection
-	// log.Println("github: adding new cards")
+	logger.Info("adding new cards")
 	for _, i := range issue.OuterSection(hashRequired, hashExisting).Issues {
 		err := wData.storage.Create(wData.project, i)
 		if err != nil {
-			panic(err)
+			c.logger.Fatal(err)
 		}
-		log.Printf("github: created item %s", i.Title())
+		logger.WithFields(logrus.Fields{"item": i.Title()}).Info("created card")
 	}
 	if err := wData.storage.Sync(query); err != nil {
-		panic(err)
+		c.logger.Fatal(err)
 	}
+	logger.Info("done")
 }
 
 // Sync runs search queries and applies changes in storage.
@@ -167,8 +171,10 @@ func (c *Client) Sync(description string) error {
 	var wg sync.WaitGroup
 	storageClient := *c.storageClient
 
-	log.Printf("Syncing %s", description)
+	logger := c.logger.WithFields(logrus.Fields{"source": "github", "description": description})
+	logger.Info("syncing")
 	for project, query := range c.settings.SearchList {
+		logger.WithField("project", project).Info("started")
 		workerData := WorkerData{
 			project: project,
 			query:   query,
@@ -177,9 +183,11 @@ func (c *Client) Sync(description string) error {
 		wg.Add(1)
 
 		c.githubWorker(workerData, &wg)
+		logger.WithField("project", project).Info("done")
+
 	}
 	wg.Wait()
-	log.Println("github update completed")
+	logger.Info("sync completed")
 	return nil
 }
 
@@ -192,6 +200,7 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error)
 		func() error {
 			result, _, err := c.api.Search.Issues(ctx, searchQuery, opts)
 			if err != nil {
+				c.logger.WithFields(logrus.Fields{"source": "github", "query": searchQuery}).WithError(err)
 				return err
 			}
 			for _, issue := range result.Issues {
@@ -205,21 +214,15 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error)
 			return nil
 		},
 		retry.RetryIf(func(err error) bool {
-			return !isCritical(err)
+			var errRateLimit *api.RateLimitError
+			return errors.As(err, &errRateLimit)
 		}),
 	)
-	log.Printf("Fetching items for query %s: found %d", searchQuery, len(results))
+	c.logger.
+		WithFields(logrus.Fields{"source": "github", "query": searchQuery, "count": len(results)}).
+		WithError(err).
+		Info("results fetched")
 	return results, err
-}
-
-// Check if github error is fatal.
-func isCritical(err error) bool {
-	var errRateLimit *api.RateLimitError
-	if errors.As(err, &errRateLimit) {
-		log.Println("hit rate limit")
-		return false
-	}
-	return true
 }
 
 // Build repo slug from Repository.

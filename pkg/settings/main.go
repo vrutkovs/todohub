@@ -3,6 +3,7 @@ package settings
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/source/jira"
 	"github.com/vrutkovs/todohub/pkg/storage"
@@ -55,14 +56,14 @@ func LoadSettings(path string, readFile ReadFile) (*Settings, error) {
 	return &s, nil
 }
 
-func (s *StorageSettings) GetActiveStorageClient() (storage.Client, error) {
+func (s *StorageSettings) GetActiveStorageClient(logger *logrus.Logger) (storage.Client, error) {
 	if s.Trello != nil {
 		if s.Trello.AppKey != "" && s.Trello.Token != "" && s.Trello.BoardID != "" {
 			return trello.New(s.Trello)
 		}
 	}
 	if s.Todoist != nil {
-		return todoist.New(s.Todoist)
+		return todoist.New(s.Todoist, logger)
 	}
 	return nil, fmt.Errorf("no valid storage settings found")
 }

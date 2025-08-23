@@ -9,6 +9,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vrutkovs/todohub/pkg/source/github"
 	"github.com/vrutkovs/todohub/pkg/storage/todoist"
 	"github.com/vrutkovs/todohub/pkg/storage/trello"
@@ -130,7 +131,8 @@ var (
 
 var _ = DescribeTable("GetActiveStorageClient",
 	func(storage StorageSettings, targetErr error) {
-		_, err := storage.GetActiveStorageClient()
+		logger := logrus.New()
+		_, err := storage.GetActiveStorageClient(logger)
 		Expect(err.Error()).To(Equal(targetErr.Error()))
 	},
 	Entry("Empty", StorageSettings{}, fmt.Errorf("no valid storage settings found")),

@@ -2,11 +2,11 @@ package jira
 
 import (
 	"context"
-	"log"
 	"sync"
 
 	jira "github.com/andygrunwald/go-jira/v2/onpremise"
 	"github.com/avast/retry-go"
+	"github.com/sirupsen/logrus"
 	"github.com/vrutkovs/todohub/pkg/issue"
 	"github.com/vrutkovs/todohub/pkg/storage"
 )
@@ -17,6 +17,7 @@ type Client struct {
 	storageClient *storage.Client
 	settings      *Settings
 	issueList     IssueList
+	logger        *logrus.Logger
 }
 
 // WorkerData holds info about worker payload.
@@ -62,7 +63,7 @@ func (c Client) Issues() IssueList {
 }
 
 // New returns jira client.
-func New(s *Settings, storageClient storage.Client) (*Client, error) {
+func New(s *Settings, storageClient storage.Client, logger *logrus.Logger) (*Client, error) {
 	tp := jira.BearerAuthTransport{
 		Token: s.Token,
 	}
@@ -74,6 +75,7 @@ func New(s *Settings, storageClient storage.Client) (*Client, error) {
 		api:           client,
 		storageClient: &storageClient,
 		settings:      s,
+		logger:        logger,
 	}, nil
 }
 
@@ -82,7 +84,9 @@ func (c *Client) Sync(description string) error {
 	var wg sync.WaitGroup
 	storageClient := *c.storageClient
 
-	log.Printf("Syncing %s", description)
+	logger := c.logger.WithFields(logrus.Fields{"source": "jira", "desc": description})
+
+	logger.Info("syncing")
 	for project, query := range c.settings.SearchList {
 		workerData := WorkerData{
 			project: project,
@@ -94,20 +98,22 @@ func (c *Client) Sync(description string) error {
 		c.jiraWorker(workerData, &wg)
 	}
 	wg.Wait()
-	log.Println("jira update completed")
+	logger.Info("syncing done")
 	return nil
 }
 
 // jiraWorker runs queries in jira.
 func (c *Client) jiraWorker(wData WorkerData, wg *sync.WaitGroup) {
+	logger := c.logger.WithFields(logrus.Fields{"source": "jira", "project": wData.project})
 	defer wg.Done()
 
 	// Run the query
 	query := wData.query
 	searchResults, err := c.getIssueInfoForSearchQuery(query)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
+	logger.Info("fetched search results")
 	// log.Printf("github: fetched search results for project '%s'", wData.project)
 	// Build a new list of issues from search results
 	required := issue.List{
@@ -122,17 +128,18 @@ func (c *Client) jiraWorker(wData WorkerData, wg *sync.WaitGroup) {
 	}
 
 	// Create a list if its missing
-	// log.Println("github: fetching existing cards")
+	logger.Info("fetching existing cards")
 	err = wData.storage.CreateProject(wData.project)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 
 	// Fetch existing cards and mark all cards for removal
 	existingIssues, err := wData.storage.GetIssues(wData.project)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
+	logger.WithField("count", len(existingIssues)).Info("fetched existing cards")
 	existing := issue.List{
 		Issues: make([]issue.Issue, len(existingIssues)),
 	}
@@ -152,31 +159,34 @@ func (c *Client) jiraWorker(wData WorkerData, wg *sync.WaitGroup) {
 	hashExisting := existing.MakeHashList(titleOnlyComparison)
 	hashRequired := required.MakeHashList(titleOnlyComparison)
 	// Remove all cards in existing which are not in intersection
-	// log.Println("github: removing old cards")
+	logger.Info("removing old cards")
 	for _, el := range issue.OuterSection(hashExisting, hashRequired).Issues {
 		err := wData.storage.Delete(wData.project, el)
 		if err != nil {
-			panic(err)
+			logger.Fatal(err)
 		}
-		log.Printf("jira: removed item %s", el.Title())
+		logger.WithField("item", el.Title()).Info("removed")
 	}
 
 	// Add all cards from required which are not in intersection
-	// log.Println("jira: adding new cards")
+	logger.Info("adding new cards")
 	for _, i := range issue.OuterSection(hashRequired, hashExisting).Issues {
 		err := wData.storage.Create(wData.project, i)
 		if err != nil {
-			panic(err)
+			logger.Fatal(err)
 		}
-		log.Printf("jira: created item %s", i.Title())
+		logger.WithField("item", i.Title()).Info("created")
 	}
 	if err := wData.storage.Sync(query); err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 }
 
 // getIssueInfoForSearchQuery runs the query and returns a list of issues.
 func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error) {
+	logger := c.logger.WithFields(logrus.Fields{"source": "jira", "query": searchQuery})
+	logger.Info("starting")
+
 	ctx := context.Background()
 	results := make([]Issue, 0)
 	err := retry.Do(
@@ -188,11 +198,14 @@ func (c *Client) getIssueInfoForSearchQuery(searchQuery string) ([]Issue, error)
 					project: i.Fields.Project.Key,
 				}
 				results = append(results, result)
-				return err
+				return nil
 			}
-			return c.api.Issue.SearchPages(ctx, searchQuery, nil, appendFunc)
+			err := c.api.Issue.SearchPages(ctx, searchQuery, nil, appendFunc)
+			logger.WithError(err).Info("done")
+			return err
 		},
 	)
+	logger.WithError(err).WithField("count", len(results)).Info("results fetched")
 	return results, err
 }
 
