@@ -6,23 +6,23 @@ import (
 	"regexp"
 	"time"
 
-	api "github.com/kobtea/go-todoist/todoist"
+	"github.com/gofrs/uuid"
+	todoist "github.com/sachaos/todoist/lib"
 	"github.com/sirupsen/logrus"
 	"github.com/vrutkovs/todohub/pkg/issue"
 )
 
-// Client is a wrapper for trello client.
+// Client is a wrapper for todoist client.
 type Client struct {
-	api      *api.Client
-	project  *api.Project
+	api      *todoist.Client
+	project  *todoist.Project
 	settings *Settings
-	context  *context.Context
 	logger   *logrus.Logger
 }
 
 // Item struct holds information about the card.
 type Item struct {
-	id   api.ID
+	id   string
 	text string
 	repo string
 }
@@ -62,103 +62,154 @@ func (c Item) Repo() string {
 
 // New returns todoist client.
 func New(s *Settings, logger *logrus.Logger) (*Client, error) {
-	clientAPI, err := api.NewClient("", s.Token, "*", "", nil)
-	if err != nil {
+	config := &todoist.Config{
+		AccessToken: s.Token,
+	}
+	client := todoist.NewClient(config)
+	ctx := context.Background()
+	if err := client.Sync(ctx); err != nil {
 		return nil, err
 	}
-	ctx := context.TODO()
-	err = clientAPI.FullSync(ctx, []api.Command{})
-	if err != nil {
-		return nil, err
-	}
-	var project *api.Project
+
+	var project *todoist.Project
 	if s.ProjectID != "" {
-		projectID := api.ID(s.ProjectID)
-		projectResponse, err := clientAPI.Project.Get(ctx, projectID)
-		if err != nil {
-			return nil, err
+		for _, p := range client.Store.Projects {
+			if p.ID == s.ProjectID {
+				project = &p
+				break
+			}
 		}
-		project = &projectResponse.Project
 	}
-	if s.ProjectName != "" {
-		project = clientAPI.Project.FindOneByName(s.ProjectName)
+	if project == nil && s.ProjectName != "" {
+		for _, p := range client.Store.Projects {
+			if p.Name == s.ProjectName {
+				project = &p
+				break
+			}
+		}
 	}
+
 	if project == nil {
-		project, err = api.NewProject(s.ProjectName, &api.NewProjectOpts{})
+		// Create project
+		id, err := uuid.NewV4()
 		if err != nil {
 			return nil, err
 		}
-		_, err = clientAPI.Project.Add(*project)
-		if err != nil {
+		newProj := todoist.Project{
+			Name: s.ProjectName,
+		}
+		newProj.ID = id.String()
+
+		if err := client.AddProject(ctx, newProj); err != nil {
 			return nil, err
+		}
+		if err := client.Sync(ctx); err != nil {
+			return nil, err
+		}
+		for _, p := range client.Store.Projects {
+			if p.Name == s.ProjectName {
+				project = &p
+				break
+			}
 		}
 	}
+
+	if project == nil {
+		return nil, fmt.Errorf("failed to find or create project")
+	}
+
 	return &Client{
-		api:      clientAPI,
+		api:      client,
 		project:  project,
 		settings: s,
-		context:  &ctx,
 		logger:   logger,
 	}, nil
 }
 
 // ensureSectionExists returns list ID if list with this name exists.
-func (c *Client) ensureSectionExists(name string) (api.ID, error) {
+func (c *Client) ensureSectionExists(name string) (string, error) {
 	logger := c.logger.WithField("storage", "todoist").WithField("section", name)
 
 	logger.Info("looking up section")
-	section := c.api.Section.FindOneByName(name)
-	if section != nil {
-		return section.ID, nil
+	for _, s := range c.api.Store.Sections {
+		if s.ProjectID == c.project.ID && s.Name == name {
+			return s.ID, nil
+		}
 	}
+
 	// List was not found, needs to be created
 	logger.Info("creating section")
-	section, err := api.NewSection(name, &api.NewSectionOpts{ParentID: c.project.ID})
+	tmpID, err := uuid.NewV4()
 	if err != nil {
-		logger.WithError(err).Error("failed to compose section")
 		return "", err
 	}
-	_, err = c.api.Section.Add(*section)
-	if err != nil {
+	args := map[string]interface{}{
+		"name":       name,
+		"project_id": c.project.ID,
+	}
+	cmd := todoist.NewCommand("section_add", args)
+	cmd.TempID = tmpID.String()
+
+	if err := c.api.ExecCommands(context.Background(), todoist.Commands{cmd}); err != nil {
 		logger.WithError(err).Error("failed to add section")
 		return "", err
 	}
-	err = c.Sync("after section was created")
-	if err != nil {
+
+	if err := c.Sync("after section was created"); err != nil {
 		logger.WithError(err).Error("failed to sync after section was created")
 		return "", err
 	}
-	logger.Info("done")
-	return section.ID, nil
+
+	// Find again
+	for _, s := range c.api.Store.Sections {
+		if s.ProjectID == c.project.ID && s.Name == name {
+			logger.Info("done")
+			return s.ID, nil
+		}
+	}
+	return "", fmt.Errorf("failed to find section after creation")
 }
 
 // ensureLabelExists returns label ID if label with this name exists.
 func (c *Client) ensureLabelExists(name string) (string, error) {
 	logger := c.logger.WithField("storage", "todoist").WithField("label", name)
 	logger.Info("looking up label")
-	label := c.api.Label.FindOneByName(name)
-	if label != nil {
-		return label.Name, nil
+
+	for _, l := range c.api.Store.Labels {
+		if l.Name == name {
+			return l.ID, nil
+		}
 	}
+
 	// Label was not found, needs to be created
 	logger.Info("creating label")
-	label, err := api.NewLabel(name, &api.NewLabelOpts{})
+	tmpID, err := uuid.NewV4()
 	if err != nil {
-		logger.WithError(err).Error("failed to create label")
 		return "", err
 	}
-	_, err = c.api.Label.Add(*label)
-	if err != nil {
+	args := map[string]interface{}{
+		"name": name,
+	}
+	cmd := todoist.NewCommand("label_add", args)
+	cmd.TempID = tmpID.String()
+
+	if err := c.api.ExecCommands(context.Background(), todoist.Commands{cmd}); err != nil {
 		logger.WithError(err).Error("failed to add label")
 		return "", err
 	}
-	err = c.Sync("after adding label")
-	if err != nil {
+
+	if err := c.Sync("after adding label"); err != nil {
 		logger.WithError(err).Error("failed to sync after adding label")
 		return "", err
 	}
-	logger.Info("done")
-	return label.Name, nil
+
+	for _, l := range c.api.Store.Labels {
+		if l.Name == name {
+			logger.Info("done")
+			return l.ID, nil
+		}
+	}
+	return "", fmt.Errorf("failed to find label after creation")
 }
 
 // CreateProject ensures section is created.
@@ -167,15 +218,13 @@ func (c *Client) CreateProject(name string) error {
 	return err
 }
 
-func (c *Client) apiItemToItem(apiItem *api.Item) Item {
+func (c *Client) apiItemToItem(apiItem todoist.Item) Item {
 	firstLabel := ""
-	for _, labelID := range apiItem.Labels {
-		label := c.api.Label.FindOneByName(labelID)
-		if label == nil {
-			continue
+	if len(apiItem.LabelNames) > 0 {
+		labelID := apiItem.LabelNames[0]
+		if label := c.api.Store.FindLabel(labelID); label != nil {
+			firstLabel = label.Name
 		}
-		firstLabel = label.Name
-		break
 	}
 	return Item{
 		id:   apiItem.ID,
@@ -185,17 +234,17 @@ func (c *Client) apiItemToItem(apiItem *api.Item) Item {
 }
 
 // fetchItemsInSection returns a map of cards.
-func (c *Client) fetchItemsInSection(sectionID api.ID, sectionName string) []Item {
+func (c *Client) fetchItemsInSection(sectionID, sectionName string) []Item {
 	logger := c.logger.WithField("storage", "todoist").WithField("section", sectionName)
 	logger.Info("fetching items")
 	result := make([]Item, 0)
-	allProjectItems := c.api.Item.FindByProjectIDs([]api.ID{c.project.ID})
 
-	for i, item := range allProjectItems {
-		if item.SectionID == sectionID {
-			result = append(result, c.apiItemToItem(&allProjectItems[i]))
+	for _, item := range c.api.Store.Items {
+		if item.ProjectID == c.project.ID && item.SectionID == sectionID {
+			result = append(result, c.apiItemToItem(item))
 		}
 	}
+
 	logger.WithField("count", len(result)).Info("fetched items")
 	return result
 }
@@ -224,31 +273,27 @@ func (c *Client) Create(sectionName string, item issue.Issue) error {
 	if err != nil {
 		return err
 	}
-	labelName, err := c.ensureLabelExists(item.Repo())
+	labelID, err := c.ensureLabelExists(item.Repo())
 	if err != nil {
 		return err
 	}
 	markDownTitle := buildMarkdownLink(item.Title(), item.URL())
-	return c.addItemToSection(markDownTitle, sectionID, sectionName, labelName)
+	return c.addItemToSection(markDownTitle, sectionID, sectionName, labelID)
 }
 
 // addItemToSection adds a text card to the list and return a pointer to Card.
-func (c *Client) addItemToSection(text string, sectionID api.ID, sectionName, labelName string) error {
+func (c *Client) addItemToSection(text, sectionID, sectionName, labelID string) error {
 	logger := c.logger.WithField("storage", "todoist").WithField("section", sectionName).WithField("text", text)
 	logger.Info("adding item")
 
-	item, err := api.NewItem(text, &api.NewItemOpts{
-		ProjectID: c.project.ID,
-		SectionID: sectionID,
-		Labels:    []string{labelName},
-	})
-	if err != nil {
+	item := todoist.Item{}
+	item.Content = text
+	item.ProjectID = c.project.ID
+	item.SectionID = sectionID
+	item.LabelNames = []string{labelID}
+
+	if err := c.api.AddItem(context.Background(), item); err != nil {
 		logger.WithError(err).Error("failed to create item")
-		return err
-	}
-	_, err = c.api.Item.Add(*item)
-	if err != nil {
-		logger.WithError(err).Error("failed to add item")
 		return err
 	}
 	return nil
@@ -268,7 +313,7 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 	cardList := c.fetchItemsInSection(sectionID, sectionName)
 	for _, i := range cardList {
 		if i.Title() == item.Title() {
-			err := c.api.Item.Close(i.id)
+			err := c.api.CloseItem(context.Background(), []string{i.id})
 			if err != nil {
 				logger.WithError(err).Error("failed to close item")
 				return err
@@ -282,14 +327,10 @@ func (c *Client) Delete(sectionName string, item issue.Issue) error {
 func (c *Client) Sync(description string) error {
 	logger := c.logger.WithField("storage", "todoist").WithField("description", description)
 	logger.Info("syncing")
-	err := c.api.Commit(*c.context)
+	err := c.api.Sync(context.Background())
 	if err != nil {
-		logger.WithError(err).Error("failed to commit")
+		logger.WithError(err).Error("failed to sync")
 		time.Sleep(time.Minute * 15)
-	}
-	err = c.api.FullSync(context.Background(), []api.Command{})
-	if err != nil {
-		c.logger.Fatal(err)
 	}
 	logger.Info("done")
 	return err

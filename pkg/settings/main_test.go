@@ -141,7 +141,7 @@ var _ = DescribeTable("GetActiveStorageClient",
 	}, errTrello401),
 	Entry("Todoist", StorageSettings{
 		Todoist: &todoistSettings,
-	}, errors.New("failed to sync, status code: 403, command: []")),
+	}, errors.New("bad request: 403 Forbidden")),
 	Entry("Both", StorageSettings{
 		Trello:  &trelloSettings,
 		Todoist: &todoistSettings,
