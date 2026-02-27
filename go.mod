@@ -40,4 +40,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/sachaos/todoist => github.com/vrutkovs/todoist v0.0.0-20260226102054-209833abb437
+replace github.com/sachaos/todoist => github.com/vrutkovs/todoist v0.0.0-20260227083246-bfd6cec95486
