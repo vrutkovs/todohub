@@ -17,8 +17,6 @@ type List struct {
 	Issues []Issue
 }
 
-var h = sha256.New()
-
 func (l *List) Get(title string) (Issue, bool) {
 	for _, issue := range l.Issues {
 		if issue.Title() == title {
@@ -43,7 +41,7 @@ func (l *List) Remove(title string) {
 }
 
 func asSha256(l Issue, titleOnly bool) string {
-	defer h.Reset()
+	h := sha256.New()
 	var obj string
 	if titleOnly {
 		obj = l.Title()
