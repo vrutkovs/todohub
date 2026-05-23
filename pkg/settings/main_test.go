@@ -141,7 +141,7 @@ var _ = DescribeTable("GetActiveStorageClient",
 	}, errTrello401),
 	Entry("Todoist", StorageSettings{
 		Todoist: &todoistSettings,
-	}, errors.New("bad request: 403 Forbidden")),
+	}, errors.New("bad request: 401 Unauthorized")),
 	Entry("Both", StorageSettings{
 		Trello:  &trelloSettings,
 		Todoist: &todoistSettings,
