@@ -164,7 +164,13 @@ func (c *Client) migrateLabelIDs(ctx context.Context) error {
 	if err := c.api.ExecCommands(ctx, cmds); err != nil {
 		return err
 	}
-	return c.Sync("after label migration")
+	logger.Info("syncing after label migration")
+	if err := c.api.Sync(ctx); err != nil {
+		logger.WithError(err).Error("failed to sync after label migration")
+		return err
+	}
+	c.api.Store.ConstructItemTree()
+	return nil
 }
 
 // ensureSectionExists returns list ID if list with this name exists.
