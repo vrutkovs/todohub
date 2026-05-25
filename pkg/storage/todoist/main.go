@@ -118,12 +118,53 @@ func New(s *Settings, logger *logrus.Logger) (*Client, error) {
 		return nil, fmt.Errorf("failed to find or create project")
 	}
 
-	return &Client{
+	c := &Client{
 		api:      client,
 		project:  project,
 		settings: s,
 		logger:   logger,
-	}, nil
+	}
+	if err := c.migrateLabelIDs(context.Background()); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// migrateLabelIDs updates items that store numeric label IDs to use label names instead.
+// Todoist API now treats the labels field as label names, not IDs.
+func (c *Client) migrateLabelIDs(ctx context.Context) error {
+	logger := c.logger.WithField("storage", "todoist")
+	var cmds todoist.Commands
+	for _, item := range c.api.Store.Items {
+		if item.ProjectID != c.project.ID {
+			continue
+		}
+		var newLabels []string
+		changed := false
+		for _, val := range item.LabelNames {
+			if label := c.api.Store.FindLabel(val); label != nil {
+				newLabels = append(newLabels, label.Name)
+				changed = true
+			} else {
+				newLabels = append(newLabels, val)
+			}
+		}
+		if !changed {
+			continue
+		}
+		logger.WithField("item", item.ID).Info("migrating label IDs to names")
+		updated := item
+		updated.LabelNames = newLabels
+		cmds = append(cmds, todoist.NewCommand("item_update", updated.UpdateParam()))
+	}
+	if len(cmds) == 0 {
+		return nil
+	}
+	logger.WithField("count", len(cmds)).Info("migrating items with old-style label IDs")
+	if err := c.api.ExecCommands(ctx, cmds); err != nil {
+		return err
+	}
+	return c.Sync("after label migration")
 }
 
 // ensureSectionExists returns list ID if list with this name exists.
@@ -170,14 +211,14 @@ func (c *Client) ensureSectionExists(name string) (string, error) {
 	return "", fmt.Errorf("failed to find section after creation")
 }
 
-// ensureLabelExists returns label ID if label with this name exists.
+// ensureLabelExists ensures a label with the given name exists and returns the name.
 func (c *Client) ensureLabelExists(name string) (string, error) {
 	logger := c.logger.WithField("storage", "todoist").WithField("label", name)
 	logger.Info("looking up label")
 
 	for _, l := range c.api.Store.Labels {
 		if l.Name == name {
-			return l.ID, nil
+			return l.Name, nil
 		}
 	}
 
@@ -206,7 +247,7 @@ func (c *Client) ensureLabelExists(name string) (string, error) {
 	for _, l := range c.api.Store.Labels {
 		if l.Name == name {
 			logger.Info("done")
-			return l.ID, nil
+			return l.Name, nil
 		}
 	}
 	return "", fmt.Errorf("failed to find label after creation")
@@ -221,9 +262,12 @@ func (c *Client) CreateProject(name string) error {
 func (c *Client) apiItemToItem(apiItem todoist.Item) Item {
 	firstLabel := ""
 	if len(apiItem.LabelNames) > 0 {
-		labelID := apiItem.LabelNames[0]
-		if label := c.api.Store.FindLabel(labelID); label != nil {
+		val := apiItem.LabelNames[0]
+		// New API stores label names directly; old items may store numeric IDs.
+		if label := c.api.Store.FindLabel(val); label != nil {
 			firstLabel = label.Name
+		} else {
+			firstLabel = val
 		}
 	}
 	return Item{
